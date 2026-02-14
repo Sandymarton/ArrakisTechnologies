@@ -1,256 +1,717 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Voice Receptionist | Never Miss a Lead Again</title>
+    <meta name="description"
+        content="AI-powered voice receptionist service. Stop leaving thousands on the table. Capture, qualify, and book leads 24/7.">
+    <meta name="keywords" content="AI receptionist, voice agent, automated booking, lead generation, revenue system">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+
+    <!-- GSAP CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+
+    <!-- Custom Styles -->
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-    <header>
-        <div class="container">
-            <div class="logo">Arrakis Technologies</div>
-            <nav>
-                <ul>
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#problem">The Problem</a></li>
-                    <li><a href="#solution">The Solution</a></li>
-                    <li><a href="#integrations">Integrations</a></li>
-                    <li><a href="#roi">ROI</a></li>
-                    <li><a href="#pricing">Pricing</a></li>
-                    <li><a href="#faq">FAQ</a></li>
-                </ul>
-            </nav>
-            <div class="mobile-menu-toggle">
-                <span></span>
-                <span></span>
-                <span></span>
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon"><img src="assets/logo.png" alt="Logo" height="60" width="60"></span> Arrakis
+                Technologies
             </div>
+            <nav class="nav-links">
+                <a href="#hero">Home</a>
+                <a href="#problem">The Problem</a>
+                <a href="#solution">The Solution</a>
+                <a href="#integrations">Integrations</a>
+                <a href="#roi">ROI</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#faq">FAQ</a>
+            </nav>
         </div>
     </header>
 
     <main>
-        <section id="home" class="hero">
-            <div class="container">
-                <div class="hero-content">
-                    <h1>Never Miss a Lead Again<br><span class="gradient-text">AI That Answers, Books & Closes 24/7</span></h1>
-                    <p class="subheadline">Stop losing revenue to missed calls. Our AI receptionist handles your phone lines instantly, qualifies leads, and books appointments directly into your calendar—day or night.</p>
-                    <div class="cta-group">
-                        <a href="#demo" class="btn btn-primary">Watch Live Demo</a>
-                        <p class="social-proof">Trusted by 30+ Businesses • 10K+ Calls Handled</p>
+        <section class="hero" id="hero">
+            <div class="hero-bg">
+                <div class="hero-bg-circle1"></div>
+                <div class="hero-bg-circle2"></div>
+            </div>
+
+            <div class="hero-content">
+                <h1>Never Miss a Lead Again, AI That Answers, Books & Closes 24/7</h1>
+                <p class="hero-subtitle">Stop leaving thousands on the table every month. Our AI Voice Receptionist
+                    captures every call, qualifies leads instantly, and books appointments automatically, so you can
+                    focus on closing deals, not chasing leads.</p>
+
+                <div class="cta-buttons">
+                    <a href="#" class="btn btn-primary" id="watchDemoBtn">Watch Live Demo</a>
+                </div>
+
+                <div id="videoModal" class="modal">
+                    <div class="modal-content">
+                        <span class="close-button">&times;</span>
+                        <video id="demoVideoPlayer" src="assets/Arrakis1.mp4" controls preload="auto"></video>
+                    </div>
+                </div>
+
+                <div id="audioModal" class="modal">
+                    <div class="modal-content" style="max-width: 500px; text-align: center; padding: 40px;">
+                        <span class="close-button" id="closeAudioBtn">&times;</span>
+                        <h3 style="margin-bottom: 25px; color: var(--text);">Real AI Call Recording</h3>
+                        <p style="margin-bottom: 20px; color: var(--muted);">Listen to how natural the conversation
+                            flows.</p>
+
+                        <audio id="demoAudioPlayer" controls style="width: 100%;">
+                            <source src="assets/demo_call.mp3.wav" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                </div>
+
+                <div class="trust-bar">
+                    <div class="trust-stat">
+                        <div class="trust-number">30+</div>
+                        <div class="trust-label">Trusted Businesses</div>
+                    </div>
+                    <div class="trust-stat">
+                        <div class="trust-number">10K+</div>
+                        <div class="trust-label">Calls Handled</div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="demo" class="audio-demos">
-            <div class="container">
-                <h2 class="section-title">Hear the Difference</h2>
-                <div class="audio-grid">
-                    <div class="audio-card">
-                        <h3>Solar Consultation</h3>
-                        <div class="audio-player-placeholder">
-                            <button class="play-btn">▶</button>
-                            <div class="progress-bar"></div>
+        <section class="social-proof">
+            <h2 class="section-title">Join Businesses Already Winning With AI</h2>
+            <p class="section-subtitle">From small businesses to growing enterprises, our AI receptionist is helping
+                companies capture more leads and close more deals.</p>
+
+            <section class="audio-samples" id="samples">
+                <div class="container">
+                    <h2 class="section-title">Hear the Difference</h2>
+                    <p class="section-subtitle">Experience how our AI handles real conversations across different
+                        industries. Natural, fast, and professional.</p>
+
+                    <div class="audio-grid">
+                        <div class="audio-card">
+                            <div class="audio-header">
+                                <div class="audio-icon-bg">☀️</div>
+                                <div class="audio-info">
+                                    <h3>Solar Consultation</h3>
+                                    <p>Booking a free consultation/p>
+                                </div>
+                            </div>
+                            <div class="custom-player">
+                                <audio id="audio-1" src="assets/demo_call.mp3.wav" preload="metadata"></audio>
+                                <button class="player-btn" onclick="togglePlay('audio-1', this)">
+                                    <span class="play-icon">▶</span>
+                                    <span class="pause-icon" style="display:none;">⏸</span>
+                                </button>
+                                <div class="progress-container" onclick="seekAudio('audio-1', event, this)">
+                                    <div class="progress-bar" id="prog-audio-1"></div>
+                                </div>
+                                <span class="time-display" id="time-audio-1">0:00</span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="audio-card">
-                        <h3>Real Estate</h3>
-                        <div class="audio-player-placeholder">
-                            <button class="play-btn">▶</button>
-                            <div class="progress-bar"></div>
+
+                        <div class="audio-card">
+                            <div class="audio-header">
+                                <div class="audio-icon-bg">🏠</div>
+                                <div class="audio-info">
+                                    <h3>Real Estate</h3>
+                                    <p>Property viewing inquiry</p>
+                                </div>
+                            </div>
+                            <div class="custom-player">
+                                <audio id="audio-2" src="assets/Property_viewing.m4a" preload="metadata"></audio>
+                                <button class="player-btn" onclick="togglePlay('audio-2', this)">
+                                    <span class="play-icon">▶</span>
+                                    <span class="pause-icon" style="display:none;">⏸</span>
+                                </button>
+                                <div class="progress-container" onclick="seekAudio('audio-2', event, this)">
+                                    <div class="progress-bar" id="prog-audio-2"></div>
+                                </div>
+                                <span class="time-display" id="time-audio-2">0:00</span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="audio-card">
-                        <h3>Restaurant</h3>
-                        <div class="audio-player-placeholder">
-                            <button class="play-btn">▶</button>
-                            <div class="progress-bar"></div>
+
+                        <div class="audio-card">
+                            <div class="audio-header">
+                                <div class="audio-icon-bg">🏠</div>
+                                <div class="audio-info">
+                                    <h3>Real Estate Selling</h3>
+                                    <p>Property selling inquiry</p>
+                                </div>
+                            </div>
+                            <div class="custom-player">
+                                <audio id="audio-3" src="assets/Property_Selling.m4a" preload="metadata"></audio>
+                                <button class="player-btn" onclick="togglePlay('audio-3', this)">
+                                    <span class="play-icon">▶</span>
+                                    <span class="pause-icon" style="display:none;">⏸</span>
+                                </button>
+                                <div class="progress-container" onclick="seekAudio('audio-3', event, this)">
+                                    <div class="progress-bar" id="prog-audio-3"></div>
+                                </div>
+                                <span class="time-display" id="time-audio-3">0:00</span>
+                            </div>
+                        </div>
+
+                        <div class="audio-card">
+                            <div class="audio-header">
+                                <div class="audio-icon-bg">🍽️</div>
+                                <div class="audio-info">
+                                    <h3>Restaurant</h3>
+                                    <p>Reservation for four</p>
+                                </div>
+                            </div>
+                            <div class="custom-player">
+                                <audio id="audio-4" src="assets/restaurent.mp4" preload="metadata"></audio>
+                                <button class="player-btn" onclick="togglePlay('audio-4', this)">
+                                    <span class="play-icon">▶</span>
+                                    <span class="pause-icon" style="display:none;">⏸</span>
+                                </button>
+                                <div class="progress-container" onclick="seekAudio('audio-4', event, this)">
+                                    <div class="progress-bar" id="prog-audio-4"></div>
+                                </div>
+                                <span class="time-display" id="time-audio-4">0:00</span>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </section>
+
+            <div class="industries">
+                <div class="industry-tag">🏠 Home Services</div>
+                <div class="industry-tag">⚖️ Legal</div>
+                <div class="industry-tag">🏥 Healthcare</div>
+                <div class="industry-tag">🏡 Real Estate</div>
+                <div class="industry-tag">💼 Professional Services</div>
+                <div class="industry-tag">🏗️ Contractors</div>
             </div>
         </section>
 
-        <section id="problem" class="problem-section">
+        <section class="problem" id="problem">
             <div class="container">
                 <h2 class="section-title">The Hidden Cost of Missed Calls</h2>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number">30-40%</div>
-                        <p>of calls go unanswered in busy service businesses.</p>
+                <p class="section-subtitle">Most businesses don't realize they're bleeding revenue every single day.</p>
+
+                <div class="problem-grid">
+                    <div class="problem-card">
+                        <span class="problem-icon">📞</span>
+                        <h3>30-40% of calls go unanswered</h3>
+                        <p>Your team is busy. Prospects call your competitors. You never even knew you lost the sale.
+                        </p>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-number">£2k-£4k</div>
-                        <p>lost revenue for every missed lead in high-ticket industries.</p>
+
+                    <div class="problem-card">
+                        <span class="problem-icon">💰</span>
+                        <h3>Every missed call costs you £2,000-£4,000</h3>
+                        <p>One flooring job. One legal consultation. One HVAC install. Gone to whoever answered first.
+                        </p>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-number">5 mins</div>
-                        <p>average response time required before leads go cold.</p>
+
+                    <div class="problem-card">
+                        <span class="problem-icon">⏰</span>
+                        <h3>78% of customers buy from the first responder</h3>
+                        <p>If you're not answering in under 60 seconds, you're losing to competitors who are.</p>
                     </div>
+
+                    <div class="problem-card">
+                        <span class="problem-icon">🔄</span>
+                        <h3>Manual follow-ups kill your growth</h3>
+                        <p>Your team spends 10-15 hours per week playing phone tag and rescheduling appointments, time
+                            they could spend closing deals.</p>
+                    </div>
+                </div>
+
+                <div class="problem-highlight">
+                    <h3>The Math:</h3>
+                    <p>If you miss just 5 calls per week, and each caller is worth £2,000, that's <strong>£40,000+ in
+                            lost revenue every month</strong>.</p>
+                    <p style="margin-top: 20px; font-size: 1.4rem; color: #FF6B35; font-weight: 700;">Can you afford to
+                        keep losing that?</p>
                 </div>
             </div>
         </section>
 
-        <section id="solution" class="solution-section">
+        <section class="solution" id="solution">
             <div class="container">
                 <h2 class="section-title">Your AI Receptionist That Actually Drives Revenue</h2>
+                <p class="section-subtitle">We don't just answer calls. We build a complete revenue generating system
+                    that captures, qualifies, and converts every lead automatically.</p>
+
                 <div class="features-grid">
                     <div class="feature-card">
-                        <h3>AI Voice that Sounds Human</h3>
-                        <p>No robotic menus. Natural conversation that feels like speaking to a real person.</p>
+                        <span class="feature-icon">🎯</span>
+                        <h3>AI Voice That Sounds Human</h3>
+                        <span class="feature-label">What it means:</span>
+                        <p>Our AI doesn't sound robotic. It uses natural conversation, understands context, handles
+                            objections, and adapts to your business tone, just like your best receptionist would.</p>
+                        <ul class="feature-list">
+                            <li>Warm, professional tone that matches your brand</li>
+                            <li>Understands accents and handles complex queries</li>
+                            <li>Natural pauses and conversational flow</li>
+                            <li>No "press 1 for sales" menus</li>
+                        </ul>
+                        <div class="demo-button" id="audioDemoBtn">🔊 Listen to a Real Call</div>
                     </div>
+
                     <div class="feature-card">
+                        <span class="feature-icon">⚡</span>
                         <h3>Instant Lead Qualification</h3>
-                        <p>Filters out spam and qualifies serious inquiries based on your criteria.</p>
+                        <span class="feature-label">What it means:</span>
+                        <p>Every caller is automatically qualified based on your criteria. The AI asks the right
+                            questions, captures key information, and only books appointments with high intent prospects.
+                        </p>
+                        <ul class="feature-list">
+                            <li>Custom qualification scripts built for YOUR business</li>
+                            <li>Budget, timeline, and urgency capture</li>
+                            <li>CRM automatically updated with detailed notes</li>
+                            <li>Only qualified leads hit your calendar</li>
+                        </ul>
                     </div>
+
                     <div class="feature-card">
-                        <h3>Automatic Booking</h3>
-                        <p>Syncs directly with your calendar to book appointments in real-time.</p>
+                        <span class="feature-icon">📅</span>
+                        <h3>Automatic Booking & Follow-Ups</h3>
+                        <span class="feature-label">What it means:</span>
+                        <p>The AI doesn't just answer—it books appointments directly into your calendar, sends
+                            confirmation texts, and follows up automatically until the job is booked or the lead is
+                            closed.</p>
+                        <ul class="feature-list">
+                            <li>Books appointments in real-time (Google Calendar, Outlook, Calendly)</li>
+                            <li>Sends instant SMS confirmations</li>
+                            <li>Automatic appointment reminders 24 hours before</li>
+                            <li>Re-engages missed calls within 60 seconds</li>
+                            <li>Reduces no-shows by 60%</li>
+                        </ul>
                     </div>
+
                     <div class="feature-card">
-                        <h3>Revenue Tracking</h3>
-                        <p>Track exactly how much revenue your AI receptionist generates.</p>
+                        <span class="feature-icon">📊</span>
+                        <h3>Revenue Tracking Dashboard</h3>
+                        <span class="feature-label">What it means:</span>
+                        <p>We don't measure success by "calls answered." We measure by money generated. You get monthly
+                            reports showing exactly how much revenue the AI captured and where to optimize further.</p>
+                        <ul class="feature-list">
+                            <li>Track: First ring → Lead qualified → Appointment booked → Job completed</li>
+                            <li>See conversion rates by call type</li>
+                            <li>Identify revenue leaks</li>
+                            <li>Continuous optimization based on data</li>
+                        </ul>
                     </div>
+
                     <div class="feature-card">
-                        <h3>24/7 Availability</h3>
-                        <p>Capture leads evenings, weekends, and holidays when you're closed.</p>
+                        <span class="feature-icon">🔄</span>
+                        <h3>Continuous Optimization</h3>
+                        <span class="feature-label">What it means:</span>
+                        <p>Your AI gets smarter every month. We review calls, test new prompts, analyze what's working,
+                            and improve conversion rates continuously.</p>
+                        <ul class="feature-list">
+                            <li>Monthly call reviews</li>
+                            <li>A/B testing of conversation flows</li>
+                            <li>Performance optimization</li>
+                            <li>Most clients see 20-30% improvement in booking rates in first 90 days</li>
+                        </ul>
                     </div>
+
                     <div class="feature-card">
-                        <h3>Bank-Level Security</h3>
-                        <p>Enterprise-grade encryption keeps your customer data safe.</p>
+                        <span class="feature-icon">🔒</span>
+                        <h3>Your Data Stays Secure</h3>
+                        <span class="feature-label">What it means:</span>
+                        <p>Your customer data is your asset. Our system integrates with your existing tools with clear
+                            security guardrails. All sensitive information stays under your control.</p>
+                        <ul class="feature-list">
+                            <li>GDPR compliant</li>
+                            <li>HIPAA support for healthcare businesses</li>
+                            <li>SOC 2 Type II certified infrastructure</li>
+                            <li>Your data never shared or sold</li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="integrations" class="integrations-section">
+        <section class="integrations" id="integrations">
             <div class="container">
-                <h2 class="section-title">Seamless Integrations</h2>
-                <p class="section-subtitle">Works with the tools you already use.</p>
-                <div class="logos-grid">
-                    <div class="logo-item">HubSpot</div>
-                    <div class="logo-item">Salesforce</div>
-                    <div class="logo-item">Google Calendar</div>
-                    <div class="logo-item">Calendly</div>
-                    <div class="logo-item">Zapier</div>
-                    <div class="logo-item">Slack</div>
+                <h2 class="section-title">Connects to Your Favorite Tools. No Manual Work.</h2>
+                <p class="section-subtitle">Seamlessly integrates with the software you already use, no complicated
+                    setup, no data silos.</p>
+
+                <div class="integration-categories">
+                    <div class="integration-category">
+                        <h4>📊 CRM & Sales</h4>
+                        <p>HubSpot • Salesforce • Pipedrive • Zoho • GoHighLevel</p>
+                    </div>
+
+                    <div class="integration-category">
+                        <h4>📅 Calendars</h4>
+                        <p>Google Calendar • Outlook • Calendly • Acuity Scheduling</p>
+                    </div>
+
+                    <div class="integration-category">
+                        <h4>💬 Communication</h4>
+                        <p>Slack • WhatsApp • Twilio • SMS • Email</p>
+                    </div>
+
+                    <div class="integration-category">
+                        <h4>⚙️ Automation</h4>
+                        <p>Zapier • Make • Webhooks • API Access</p>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section id="roi" class="roi-section">
+        <section class="roi" id="roi">
             <div class="container">
                 <h2 class="section-title">A System That Pays For Itself</h2>
-                <div class="roi-examples">
+                <p class="section-subtitle">Let's talk numbers. This isn't a cost, it's an investment that generates
+                    returns every single month.</p>
+
+                <div class="roi-grid">
                     <div class="roi-card">
-                        <h3>Flooring Company</h3>
-                        <p>Recovered £12,000 in lost leads in the first month.</p>
+                        <h3>If you're a flooring company:</h3>
+                        <p>• Average job value: £3,000</p>
+                        <p>• AI captures <strong>just 2 extra jobs per month</strong></p>
+                        <p>• Revenue generated: <strong>£6,000</strong></p>
+                        <p>• System investment: £795/month</p>
+                        <div class="roi-result">Net gain: £5,205/month</div>
                     </div>
+
                     <div class="roi-card">
-                        <h3>Dental Clinic</h3>
-                        <p>Booked 15 extra appointments per week automatically.</p>
+                        <h3>If you're a dental clinic:</h3>
+                        <p>• Average new patient value: £2,500</p>
+                        <p>• AI books <strong>3 extra appointments per month</strong></p>
+                        <p>• Revenue generated: <strong>£7,500</strong></p>
+                        <p>• System investment: £795/month</p>
+                        <div class="roi-result">Net gain: £6,705/month</div>
                     </div>
+
                     <div class="roi-card">
-                        <h3>HVAC Services</h3>
-                        <p>Captured 8 emergency calls over a single weekend.</p>
+                        <h3>If you're an HVAC company:</h3>
+                        <p>• Average install: £4,000</p>
+                        <p>• AI converts <strong>1 extra lead per month</strong></p>
+                        <p>• Revenue generated: <strong>£4,000</strong></p>
+                        <p>• System investment: £795/month</p>
+                        <div class="roi-result">Net gain: £3,205/month</div>
                     </div>
+                </div>
+
+                <div class="roi-example">
+                    <h3>The Late-Night Call That Paid for 5 Months</h3>
+                    <blockquote>
+                        We set up an AI Voice Receptionist for a marketing agency. A late night call came in at 11:47
+                        PM, one their team would have completely missed. Our AI answered, qualified the lead, asked
+                        about budget and timeline, and booked a consultation for the next morning. The CRM was
+                        automatically updated with detailed notes.
+                    </blockquote>
+                    <p class="result">Result: The prospect signed a <strong>£5,000 website package</strong> plus a
+                        <strong>£1,000/month retainer</strong>.</p>
+                    <p style="color: #8b5cf6; font-weight: 600; margin-top: 20px; font-size: 1.1rem;">That single call
+                        covered the AI system cost for the next 5 months.</p>
+                    <p class="roi-bottom-line">If the AI captures just one extra job per month, it pays for itself.
+                        Everything beyond that is pure profit.</p>
                 </div>
             </div>
         </section>
-        
-        <section id="case-studies" class="case-studies-section">
-             <div class="container">
-                <h2 class="section-title">Success Stories</h2>
-                <div class="testimonials-grid">
-                    <div class="testimonial-card">
-                        <h3>Elite Flooring Co.</h3>
-                        <p class="challenge"><strong>Challenge:</strong> Missed calls while on job sites.</p>
-                        <p class="result"><strong>Result:</strong> 20% increase in bookings.</p>
+
+        <section class="case-studies" id="case-studies">
+            <div class="container">
+                <h2 class="section-title">Real Results from Real Businesses</h2>
+
+                <div class="case-grid">
+                    <div class="case-card">
+                        <div class="case-client">Elite Flooring Co.</div>
+                        <div class="case-location">Manchester, UK | Home Services</div>
+
+                        <div class="case-section">
+                            <div class="case-label">Challenge</div>
+                            <div class="case-text">Missing 15-20 calls per week. Losing jobs to competitors who answered
+                                faster.</div>
+                        </div>
+
+                        <div class="case-results">
+                            <h4>Results (60 Days)</h4>
+                            <div class="result-item">100% call answer rate (was 60%)</div>
+                            <div class="result-item">£18,000 in recovered revenue from previously missed calls</div>
+                            <div class="result-item">42% increase in booked appointments</div>
+                            <div class="result-item">Team productivity up 30%</div>
+                        </div>
+
+                        <div class="case-quote">
+                            "The AI answered a call at 11 PM on a Saturday, a time we'd never be available. It qualified
+                            the lead, asked about budget and timeline, and booked an estimate for Monday morning. That
+                            job turned into a £6,500 install. The system paid for itself in one call."
+                            <div class="case-author">- John Martinez, Owner</div>
+                        </div>
                     </div>
-                    <div class="testimonial-card">
-                         <h3>Premier Dental Clinic</h3>
-                        <p class="challenge"><strong>Challenge:</strong> Receptionist overwhelmed at peak times.</p>
-                        <p class="result"><strong>Result:</strong> Zero missed patient inquiries.</p>
+
+                    <div class="case-card">
+                        <div class="case-client">Premier Dental Clinic</div>
+                        <div class="case-location">London, UK | Healthcare</div>
+
+                        <div class="case-section">
+                            <div class="case-label">Challenge</div>
+                            <div class="case-text">Front desk overwhelmed. Long wait times. Patients hanging up and
+                                calling competitors.</div>
+                        </div>
+
+                        <div class="case-results">
+                            <h4>Results (90 Days)</h4>
+                            <div class="result-item">67% reduction in missed calls</div>
+                            <div class="result-item">£22,000 in additional appointments booked</div>
+                            <div class="result-item">58% decrease in no-shows (automated reminders)</div>
+                            <div class="result-item">Front desk staff freed up 15 hours/week</div>
+                        </div>
+
+                        <div class="case-quote">
+                            "Our receptionist used to spend half her day playing phone tag. Now the AI handles initial
+                            bookings, and she focuses on patient care. We're booking 40% more appointments, and patient
+                            satisfaction scores are up."
+                            <div class="case-author">- Dr. Sarah Chen, Practice Owner</div>
+                        </div>
+                    </div>
+
+                    <div class="case-card">
+                        <div class="case-client">Real Estate Collective</div>
+                        <div class="case-location">Birmingham, UK | Real Estate</div>
+
+                        <div class="case-section">
+                            <div class="case-label">Challenge</div>
+                            <div class="case-text">Leads calling outside business hours. Slow response time losing
+                                deals.</div>
+                        </div>
+
+                        <div class="case-section">
+                            <div class="case-label">Solution</div>
+                            <div class="case-text">AI Voice Receptionist with instant lead qualification and follow-up
+                            </div>
+                        </div>
+
+                        <div class="case-results">
+                            <h4>Results (45 Days)</h4>
+                            <div class="result-item">23 deals closed from calls the team would have missed</div>
+                            <div class="result-item">£47,000 in commissions generated</div>
+                            <div class="result-item">Response time: 8 seconds (was 4+ hours)</div>
+                            <div class="result-item">87% lead capture rate (was 52%)</div>
+                        </div>
+
+                        <div class="case-quote">
+                            "The AI doesn't just answer—it qualifies. I get a notification with detailed notes about
+                            budget, timeline, and urgency. By the time I call back, I know exactly what they need. It's
+                            like having a 24/7 sales assistant who never sleeps."
+                            <div class="case-author">- Michael Torres, Director</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="pricing" class="pricing-section">
+        <section class="pricing" id="pricing">
             <div class="container">
                 <h2 class="section-title">Choose Your AI Receptionist</h2>
+                <p class="section-subtitle">Simple, transparent pricing designed to grow with your business. Start with
+                    a 14-day free trial—no credit card required.</p>
+
+                <div class="show-pricing-btn">
+                    <button class="btn btn-primary" id="show-pricing-btn-main">View Investment Options</button>
+                </div>
+
                 <div class="pricing-grid">
-                    <div class="pricing-card">
-                        <h3>Starter</h3>
-                        <div class="price">£680<span>/mo</span></div>
-                        <ul class="features-list">
-                            <li>24/7 Call Answering</li>
-                            <li>Appointment Booking</li>
-                            <li>Basic CRM Integration</li>
-                            <li>Email Support</li>
-                        </ul>
-                        <a href="#" class="btn btn-secondary">Get Started</a>
+                    <div class="price-card">
+                        <div class="price-tier">STARTER</div>
+                        <div class="price-for">Best for: Small businesses, single departments</div>
+                        <div class="price-amount"><span class="currency-symbol">£</span><span class="price-value"
+                                data-usd="980" data-gbp="680" data-eur="895">795</span></div>
+                        <div class="price-period">/month</div>
+                        <div class="price-setup">One-Time Setup: <span class="currency-symbol">£</span><span
+                                class="setup-value" data-usd="500 to 2,500" data-gbp="400 to 1,900"
+                                data-eur="400 to 2,200">400 to 1,900</span></div>
+
+                        <div class="price-features">
+                            <h4>What's Included:</h4>
+                            <ul>
+                                <li>Bespoke AI build (custom voice, intents, routing)</li>
+                                <li>Post-call automation (follow-ups, reminders, re-engagement)</li>
+                                <li>Revenue tracking from call → paid job</li>
+                                <li>Monthly optimization (call reviews, prompt testing)</li>
+                                <li>Integration with your CRM + 2 other tools</li>
+                                <li>Data security with clear guardrails</li>
+                                <li>Up to 500 calls/month</li>
+                            </ul>
+                        </div>
+
+                        <div class="roi-box">
+                            <h4>ROI Example:</h4>
+                            <p>Capture 1 extra <span class="roi-currency-value" data-usd="$3,000" data-gbp="£3,000"
+                                    data-eur="€3,500">£3,000</span> job per month = <span class="roi-currency-value"
+                                    data-usd="$2,005" data-gbp="£2,205" data-eur="€2,605">£2,205</span> net profit after
+                                system cost</p>
+                        </div>
+
+                        <a href="#" class="btn btn-primary"
+                            style="width: 100%; text-align: center; display: inline-block; text-decoration: none;">Subscribe</a>
                     </div>
-                    <div class="pricing-card featured">
-                        <h3>Enterprise</h3>
-                        <div class="price">Custom</div>
-                        <ul class="features-list">
-                            <li>Custom Voice Training</li>
-                            <li>Advanced Workflows</li>
-                            <li>Dedicated Account Manager</li>
-                            <li>API Access</li>
-                        </ul>
-                        <a href="#" class="btn btn-primary">Contact Sales</a>
+
+                    <div class="price-card">
+                        <div class="price-tier">ENTERPRISE</div>
+                        <div class="price-for">Best for: Large-scale operations, unique requirements</div>
+                        <div class="price-amount">Custom</div>
+                        <div class="price-period">Pricing</div>
+                        <div class="price-setup">One-Time Setup: Custom Quote</div>
+
+                        <div class="price-features">
+                            <h4>Everything in Professional, PLUS:</h4>
+                            <ul>
+                                <li>Fully bespoke AI development</li>
+                                <li>Custom automation workflows & API-driven actions</li>
+                                <li>Real-time analytics dashboard</li>
+                                <li>Dedicated account manager</li>
+                                <li>Quarterly strategic reviews & proactive optimization</li>
+                                <li>Unlimited custom integrations</li>
+                                <li>HIPAA compliance, SLAs, custom security protocols</li>
+                                <li>24/7 dedicated support</li>
+                                <li>White-labeling options</li>
+                            </ul>
+                        </div>
+
+                        <button class="btn btn-secondary" style="width: 100%;">Schedule Consultation</button>
+                    </div>
+                </div>
+
+                <div class="currency-switcher">
+                    <button class="currency-btn" data-currency="usd">USD ($)</button>
+                    <button class="currency-btn active" data-currency="gbp">GBP (£)</button>
+                    <button class="currency-btn" data-currency="eur">EUR (€)</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="faq" id="faq">
+            <div class="container">
+                <h2 class="section-title">Your Questions, Answered</h2>
+
+                <div class="faq-container">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>How is this different from a basic answering service?</span>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            Basic answering services just take messages. We build an integrated revenue system. Our AI
+                            qualifies leads, books appointments, follows up automatically, tracks revenue impact, and
+                            continuously optimizes. You get a custom solution built for your exact workflow, not a
+                            generic script. Plus, we measure success by money generated, not just calls answered.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>Does it sound robotic?</span>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            No. We use natural, human-like voices and build custom conversation flows based on how YOUR
+                            best receptionist talks to customers. The AI understands context, handles objections
+                            naturally, and adapts its tone to match your brand. Most callers don't realize they're
+                            speaking with AI—and when they do, they're impressed by how helpful it is.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>How long does setup take?</span>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            Most businesses are fully operational within 2 weeks. Week 1: We interview your team, map
+                            your qualification process, build the custom AI, and integrate with your CRM and calendar.
+                            Week 2: We test with real scenarios, refine the prompts, and train your team on monitoring
+                            the system.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>Can it integrate with my existing systems?</span>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            Yes. We integrate with HubSpot, Salesforce, Pipedrive, Zoho, GoHighLevel, Google Calendar,
+                            Outlook, Calendly, Slack, WhatsApp, Twilio, Zapier, Make, and 50+ other platforms. If you
+                            have a custom system, we can build API integrations tailored to your needs.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>Is my data secure?</span>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            Absolutely. Your customer data stays in YOUR tech stack with clear security guardrails.
+                            We're GDPR compliant for all EU businesses, HIPAA ready for healthcare clients, SOC 2 Type
+                            II certified infrastructure, and end-to-end encrypted communications. Your data is never
+                            shared, sold, or used for training other AIs.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>Will this replace my receptionist?</span>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            No—it empowers your team. The AI handles routine calls (bookings, FAQs, qualification),
+                            freeing your receptionist to focus on complex customer issues, building relationships,
+                            high-value work, and in-person customer service. Most clients report their team is happier,
+                            more productive, and less stressed.
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="faq" class="faq-section">
-            <div class="container">
-                <h2 class="section-title">Frequently Asked Questions</h2>
-                <div class="accordion">
-                    <div class="accordion-item">
-                        <button class="accordion-header">How long does setup take?</button>
-                        <div class="accordion-content">
-                            <p>Most clients are up and running within 48-72 hours.</p>
-                        </div>
-                    </div>
-                    <div class="accordion-item">
-                        <button class="accordion-header">Is it secure?</button>
-                        <div class="accordion-content">
-                            <p>Yes, we use bank-level encryption and comply with all major data protection regulations.</p>
-                        </div>
-                    </div>
-                     <div class="accordion-item">
-                        <button class="accordion-header">Can I customize the voice?</button>
-                        <div class="accordion-content">
-                            <p>Absolutely. We offer a range of natural-sounding voices to match your brand.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
         <section class="final-cta">
-            <div class="container">
-                <h2>Ready to Transform Your Business?</h2>
-                <p>Book a strategy call to see if Arrakis is right for you.</p>
-                <a href="#" class="btn btn-primary">Book Your Strategy Call</a>
+            <h2>You Work Hard, Let AI Work Smart</h2>
+            <p>Let's talk about your business. In 30 minutes, we'll show you exactly where you're leaving money on the
+                table and how our AI Voice Receptionist can recover it.</p>
+            <p style="font-weight: 700; font-size: 1.3rem;">No sales pitch. No pressure. Just strategy.</p>
+
+            <div class="what-happens">
+                <h3>What Happens on the Call:</h3>
+                <ol>
+                    <li>We analyze your current call volume and conversion rates</li>
+                    <li>We identify where you're losing revenue</li>
+                    <li>We show you a custom plan built for your business</li>
+                    <li>You decide if it makes sense</li>
+                </ol>
             </div>
+
+            <p style="font-size: 1.25rem; font-weight: 700; margin-bottom: 40px;">If capturing even one extra job per
+                month would make this worthwhile, let's talk.</p>
+
+            <a href="#" class="btn btn-primary">Book Your Strategy Call</a>
         </section>
     </main>
 
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <p>&copy; 2024 Arrakis Technologies. All rights reserved.</p>
-                <p>Contact: <a href="mailto:info@arrakistechnologies.com">info@arrakistechnologies.com</a></p>
-            </div>
-        </div>
-    </footer>
+    <div class="copyright">
+        <p>&copy; 2025 AI Voice Receptionist Solutions. All rights reserved.</p>
+        <p>
+            <a href="mailto:info@arrakistechnologies.com">info@arrakistechnologies.com</a>
+        </p>
+    </div>
 
+    <!-- Main Logic -->
     <script src="script.js"></script>
 </body>
+
 </html>

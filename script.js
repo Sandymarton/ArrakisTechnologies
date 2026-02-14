@@ -309,3 +309,9 @@ function seekAudio(audioId, event, container) {
         audio.currentTime = percent * audio.duration;
     }
 }
+
+// Calendar Integration
+function openCalendar() {
+    Calendly.initPopupWidget({ url: 'https://calendly.com/fsquaredfrancone/30min' });
+    return false;
+}

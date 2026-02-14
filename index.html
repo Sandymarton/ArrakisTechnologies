@@ -17,6 +17,10 @@
 
     <!-- Custom Styles -->
     <link rel="stylesheet" href="styles.css">
+
+    <!-- Calendly Badge Widget -->
+    <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+    <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
 </head>
 
 <body>
@@ -414,7 +418,8 @@
                         automatically updated with detailed notes.
                     </blockquote>
                     <p class="result">Result: The prospect signed a <strong>£5,000 website package</strong> plus a
-                        <strong>£1,000/month retainer</strong>.</p>
+                        <strong>£1,000/month retainer</strong>.
+                    </p>
                     <p style="color: #8b5cf6; font-weight: 600; margin-top: 20px; font-size: 1.1rem;">That single call
                         covered the AI system cost for the next 5 months.</p>
                     <p class="roi-bottom-line">If the AI captures just one extra job per month, it pays for itself.
@@ -583,7 +588,8 @@
                             </ul>
                         </div>
 
-                        <button class="btn btn-secondary" style="width: 100%;">Schedule Consultation</button>
+                        <button class="btn btn-secondary" style="width: 100%;" onclick="openCalendar()">Schedule
+                            Consultation</button>
                     </div>
                 </div>
 
@@ -699,7 +705,7 @@
             <p style="font-size: 1.25rem; font-weight: 700; margin-bottom: 40px;">If capturing even one extra job per
                 month would make this worthwhile, let's talk.</p>
 
-            <a href="#" class="btn btn-primary">Book Your Strategy Call</a>
+            <a href="#" class="btn btn-primary" onclick="openCalendar(); return false;">Book Your Strategy Call</a>
         </section>
     </main>
 

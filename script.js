@@ -311,7 +311,34 @@ function seekAudio(audioId, event, container) {
 }
 
 // Calendar Integration
+// Calendar Integration
+const calendarModal = document.getElementById('calendarModal');
+const closeCalendarBtn = document.getElementById('closeCalendarBtn');
+
 function openCalendar() {
-    Calendly.initPopupWidget({ url: 'https://calendly.com/fsquaredfrancone/30min' });
+    if (calendarModal) {
+        calendarModal.classList.add('show');
+    }
     return false;
+}
+
+if (calendarModal && closeCalendarBtn) {
+    // Close via X button
+    closeCalendarBtn.addEventListener('click', function () {
+        calendarModal.classList.remove('show');
+    });
+
+    // Close by clicking outside
+    window.addEventListener('click', function (e) {
+        if (e.target === calendarModal) {
+            calendarModal.classList.remove('show');
+        }
+    });
+
+    // Close with Escape key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === "Escape" && calendarModal.classList.contains('show')) {
+            calendarModal.classList.remove('show');
+        }
+    });
 }

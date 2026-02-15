@@ -75,18 +75,22 @@ applyScrollAnimations('.price-card', { y: 60, stagger: 0.1, ease: 'power3.out' }
 // Smooth Scrolling for Navigation
 document.querySelectorAll('.nav-links a').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
-        e.preventDefault();
         const targetId = this.getAttribute('href');
-        const scrollTarget = (targetId === '#hero') ? 0 : targetId;
 
-        gsap.to(window, {
-            duration: 1,
-            scrollTo: {
-                y: scrollTarget,
-                offsetY: (targetId === '#hero') ? 0 : 90
-            },
-            ease: "power2.inOut"
-        });
+        // Only intercept internal anchor links (starting with #)
+        if (targetId.startsWith('#')) {
+            e.preventDefault();
+            const scrollTarget = (targetId === '#hero') ? 0 : targetId;
+
+            gsap.to(window, {
+                duration: 1,
+                scrollTo: {
+                    y: scrollTarget,
+                    offsetY: (targetId === '#hero') ? 0 : 90
+                },
+                ease: "power2.inOut"
+            });
+        }
     });
 });
 

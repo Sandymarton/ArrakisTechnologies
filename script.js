@@ -372,7 +372,7 @@ function playIntroAtStart() {
 
     document.body.style.overflow = 'hidden';
 
-    // ---- Canvas: 3D Perspective Sound Wave Mesh ----
+    // ---- Canvas: True 3D Grid Terrain (Retro-Futuristic/Premium) ----
     var ctx = canvas.getContext('2d');
     var dpr = window.devicePixelRatio || 1;
     canvas.width = window.innerWidth * dpr;
@@ -383,107 +383,97 @@ function playIntroAtStart() {
     var time = 0;
     var frameId;
 
-    var COLS = 60;
-    var ROWS = 30;
-    var SPACING = 30;
-    var FOV = 500;
-    var camY = -180;
-    var camZ = -300;
+    // 3D Perspective Config
+    var fov = 600;
+    var cameraHeight = 150; // Camera height above the grid
+    var gridSpeed = 2; // Speed of movement towards camera
 
-    function project3D(x, y, z) {
-        var rz = z - camZ;
-        var ry = y - camY;
-        if (rz <= 0) return null;
-        var scale = FOV / rz;
-        return { sx: W / 2 + x * scale, sy: H / 2 + ry * scale, scale: scale, depth: rz };
-    }
-
-    function renderWaves3D() {
-        time += 0.012;
+    function render3DGrid() {
+        time += 0.01;
         ctx.clearRect(0, 0, W, H);
-        ctx.fillStyle = '#000';
+
+        // Deep premium black background
+        ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, W, H);
 
-        var points = [];
-        for (var row = 0; row < ROWS; row++) {
-            var rowPts = [];
-            for (var col = 0; col < COLS; col++) {
-                var x = (col - COLS / 2) * SPACING;
-                var z = row * SPACING + 100;
-                var wave1 = Math.sin(col * 0.15 + time * 2.0) * 25;
-                var wave2 = Math.sin(col * 0.08 + time * 1.2 + row * 0.1) * 15;
-                var wave3 = Math.cos(col * 0.22 + time * 3.0) * 10 * Math.sin(row * 0.2 + time * 0.5);
-                var wave4 = Math.sin((col + row) * 0.1 + time * 1.8) * 8;
-                var y = wave1 + wave2 + wave3 + wave4;
-                var projected = project3D(x, y, z);
-                rowPts.push({ x: x, y: y, z: z, projected: projected });
-            }
-            points.push(rowPts);
-        }
+        // Grid parameters
+        var spacing = 60;
+        var cols = Math.ceil(W / spacing) * 2;
+        var rows = 40;
+        var centerX = W / 2;
+        var centerY = H / 2;
 
-        // Draw horizontal wave lines — back to front
-        for (var row = ROWS - 1; row >= 0; row--) {
-            var rowPts = points[row];
-            var depthRatio = 1 - row / ROWS;
-            var alpha = 0.05 + depthRatio * 0.35;
-            var hue = 260 + depthRatio * 20;
+        ctx.lineWidth = 1;
+
+        // We draw two planes: Floor and Ceiling (optional, here just floor creates vastness)
+        // Let's draw a 'Landscape' of sound waves
+
+        for (var r = 0; r < rows; r++) {
+            // Z depth calculation
+            // z moves from far (rows * spacing) to near (0)
+            // Add time to z to make it move
+            var zBase = (r * spacing) - ((time * 100) % spacing);
+            // Ensure z is always positive for projection
+            if (zBase < 1) zBase += rows * spacing;
+
+            // Perspective scale
+            var scale = fov / (fov + zBase);
+            var alpha = Math.min(1, scale * 1.5); // Fade out as it gets closer/further logic can be tuned
+            // Fade distant lines
+            alpha *= Math.max(0, (1 - zBase / (rows * spacing)));
+
+            // Wave height variation based on time and audio-feel
+            var waveY = Math.sin(r * 0.5 + time * 3) * 20 * scale;
+
+            // Draw Horizontal Line at this Z depth
+            var yScreen = centerY + (cameraHeight * scale) + waveY;
 
             ctx.beginPath();
-            ctx.strokeStyle = 'hsla(' + hue + ', 80%, 55%, ' + alpha + ')';
-            ctx.lineWidth = 0.5 + depthRatio * 1.8;
-            ctx.shadowColor = 'hsla(' + hue + ', 90%, 50%, ' + (alpha * 0.5) + ')';
-            ctx.shadowBlur = 6 + depthRatio * 10;
-
-            var started = false;
-            for (var col = 0; col < COLS; col++) {
-                var p = rowPts[col].projected;
-                if (!p) continue;
-                if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
-                else { ctx.lineTo(p.sx, p.sy); }
-            }
-            ctx.stroke();
-
-            // Vertex dots on front rows
-            if (depthRatio > 0.5) {
-                ctx.shadowBlur = 0;
-                for (var col2 = 0; col2 < COLS; col2 += 3) {
-                    var p2 = rowPts[col2].projected;
-                    if (!p2) continue;
-                    ctx.beginPath();
-                    ctx.fillStyle = 'hsla(' + hue + ', 80%, 70%, ' + (alpha * 0.6) + ')';
-                    ctx.arc(p2.sx, p2.sy, Math.max(0.8, 1.5 * p2.scale), 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-        }
-
-        // Sparse vertical connecting lines
-        ctx.shadowBlur = 0;
-        for (var col = 0; col < COLS; col += 4) {
-            ctx.beginPath();
-            ctx.strokeStyle = 'rgba(139, 92, 246, 0.04)';
-            ctx.lineWidth = 0.5;
-            var started = false;
-            for (var row = 0; row < ROWS; row++) {
-                var p = points[row][col].projected;
-                if (!p) continue;
-                if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
-                else { ctx.lineTo(p.sx, p.sy); }
-            }
+            ctx.strokeStyle = 'rgba(139, 92, 246, ' + (alpha * 0.5) + ')';
+            ctx.moveTo(0, yScreen);
+            ctx.lineTo(W, yScreen);
             ctx.stroke();
         }
 
-        // Central ambient glow
-        var glowGrad = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.min(W, H) * 0.5);
-        glowGrad.addColorStop(0, 'rgba(139, 92, 246, 0.05)');
-        glowGrad.addColorStop(1, 'transparent');
-        ctx.fillStyle = glowGrad;
+        // Draw Vertical Lines (Perspective)
+        for (var c = -cols / 2; c < cols / 2; c++) {
+            var xWorld = c * spacing;
+
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(139, 92, 246, 0.15)';
+
+            // Draw segment by segment to curve slightly? No, straight lines for elegant grid
+            // Just projection:
+            // Point 1 (Close)
+            var z1 = 10;
+            var scale1 = fov / (fov + z1);
+            var x1 = centerX + xWorld * scale1;
+            var y1 = centerY + cameraHeight * scale1;
+
+            // Point 2 (Far)
+            var z2 = rows * spacing;
+            var scale2 = fov / (fov + z2);
+            var x2 = centerX + xWorld * scale2;
+            var y2 = centerY + cameraHeight * scale2;
+
+            if (x1 > 0 && x1 < W) { // Optimization
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+        }
+
+        // Ambient Glow in center
+        var grd = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, H * 0.6);
+        grd.addColorStop(0, 'rgba(139, 92, 246, 0.1)');
+        grd.addColorStop(1, 'transparent');
+        ctx.fillStyle = grd;
         ctx.fillRect(0, 0, W, H);
 
-        frameId = requestAnimationFrame(renderWaves3D);
+        frameId = requestAnimationFrame(render3DGrid);
     }
+    render3DGrid();
 
-    renderWaves3D();
 
     // ---- Create letter spans ----
     'ARRAKIS'.split('').forEach(function (ch) {
@@ -504,119 +494,149 @@ function playIntroAtStart() {
     var chars2 = line2.querySelectorAll('.intro-char');
     var allChars = Array.from(chars1).concat(Array.from(chars2));
 
-    // ---- Set initial states: LAUNCHED from off-screen edges ----
-    function getThrowOrigin() {
-        var edge = Math.floor(Math.random() * 4);
-        var spread = (Math.random() - 0.5) * W * 1.5;
-        if (edge === 0) return { x: spread, y: -(800 + Math.random() * 1500) };
-        if (edge === 1) return { x: W + 500 + Math.random() * 1500, y: spread };
-        if (edge === 2) return { x: spread, y: H + 500 + Math.random() * 1500 };
-        return { x: -(W + 500 + Math.random() * 1500), y: spread };
+    // ---- Magnetic "Thrown" Config ----
+    // To feel like a magnet:
+    // 1. Start far away (high distance).
+    // 2. Start slow, then ACCELERATE heavily (Ease In).
+    // 3. SLAM into position.
+
+    function setInitialMagneticState(chars) {
+        chars.forEach(function (ch) {
+            // Random start position from WAY off screen
+            var angle = Math.random() * Math.PI * 2;
+            var distance = 2000 + Math.random() * 1000; // Far away
+
+            gsap.set(ch, {
+                x: Math.cos(angle) * distance,
+                y: Math.sin(angle) * distance,
+                color: "rgba(255,255,255,0)", // Start invisible
+                scale: 5, // Start HUGE
+                z: 1000, // CSS 3D Depth
+                textShadow: "0 0 0px transparent"
+            });
+        });
     }
 
-    chars1.forEach(function (ch) {
-        var origin = getThrowOrigin();
-        gsap.set(ch, {
-            x: origin.x, y: origin.y,
-            rotation: (Math.random() - 0.5) * 720,
-            scale: 0.4 + Math.random() * 0.6,
-            opacity: 1
-        });
-    });
-
-    chars2.forEach(function (ch) {
-        var origin = getThrowOrigin();
-        gsap.set(ch, {
-            x: origin.x, y: origin.y,
-            rotation: (Math.random() - 0.5) * 540,
-            scale: 0.4 + Math.random() * 0.6,
-            opacity: 1
-        });
-    });
+    setInitialMagneticState(chars1);
+    setInitialMagneticState(chars2);
+    gsap.set(content, { perspective: 1000 }); // Enable 3D transitions
 
     // ---- Master Timeline ----
     var tl = gsap.timeline();
 
-    // Phase 1: THROWN IN — letters fly from off-screen at high speed
+    // Group 1: ARRAKIS
+    // Accelerate IN (expo.in is very sharp acceleration)
     tl.to(chars1, {
-        x: 0, y: 0, rotation: 0, scale: 1,
-        duration: 0.9,
-        stagger: { each: 0.06, from: "edges" },
-        ease: "back.out(1.4)"
-    }, 0.5)
-        .to(chars2, {
-            x: 0, y: 0, rotation: 0, scale: 1,
-            duration: 0.8,
-            stagger: { each: 0.04, from: "edges" },
-            ease: "back.out(1.2)"
-        }, 0.9)
+        x: 0,
+        y: 0,
+        z: 0,
+        scale: 1,
+        color: "#ffffff",
+        opacity: 1,
+        duration: 1.8, // Long duration for the build-up
+        stagger: {
+            each: 0.1,
+            from: "random"
+        },
+        ease: "expo.in" // THE MAGNET EFFECT: Slow start -> ZOOM -> CRASH
+    }, 0.5);
 
-        // Phase 2: Impact flash
+    // Impact Flash for Arrakis (simulating the collision)
+    tl.to(chars1, {
+        textShadow: "0 0 50px white, 0 0 20px cyan",
+        duration: 0.1,
+        ease: "power1.out"
+    }, ">-0.2") // Start slightly before movement ends
         .to(chars1, {
-            textShadow: "0 0 50px rgba(139, 92, 246, 1), 0 0 100px rgba(139, 92, 246, 0.6), 0 0 150px rgba(139, 92, 246, 0.3)",
-            duration: 0.2, ease: "power2.out"
-        })
-        .to(chars2, {
-            textShadow: "0 0 30px rgba(139, 92, 246, 0.8), 0 0 60px rgba(139, 92, 246, 0.3)",
-            color: "rgba(255, 255, 255, 0.9)",
-            duration: 0.2, ease: "power2.out"
-        }, "<")
-
-        // Phase 3: Glow settles
-        .to(allChars, {
-            textShadow: "0 0 10px rgba(139, 92, 246, 0.2)",
-            duration: 0.6, ease: "power2.out"
-        })
-
-        // Phase 4: Hold
-        .to({}, { duration: 0.8 })
-
-        // Phase 5: Reveal line
-        .to(revealLine, { scaleX: 1, duration: 0.6, ease: "power4.inOut" })
-
-        // Phase 6: Text fades out
-        .to(content, { opacity: 0, scale: 0.95, duration: 0.4, ease: "power3.in" }, "-=0.2")
-        .to(canvas, { opacity: 0, duration: 0.4, ease: "power2.in" }, "<")
-
-        // Phase 7: Panels split — eyelid reveal
-        .to(panelTop, { yPercent: -100, duration: 1.2, ease: "power4.inOut" })
-        .to(panelBottom, { yPercent: 100, duration: 1.2, ease: "power4.inOut" }, "<")
-        .to(revealLine, { opacity: 0, scaleY: 20, duration: 0.6, ease: "power2.in" }, "<")
-
-        // Phase 8: Cleanup
-        .call(function () {
-            cancelAnimationFrame(frameId);
-            loader.style.display = 'none';
-            panelTop.style.display = 'none';
-            panelBottom.style.display = 'none';
-            content.style.display = 'none';
-            canvas.style.display = 'none';
-            if (revealLine) revealLine.style.display = 'none';
-            document.body.style.overflow = '';
-            if (!heroAnimationsStarted) {
-                startHeroAnimations();
-                heroAnimationsStarted = true;
-            }
-            ScrollTrigger.refresh();
+            textShadow: "0 0 0px transparent",
+            duration: 0.5,
+            ease: "power2.out"
         });
 
-    // Fail-safe
+
+    // Group 2: TECHNOLOGIES
+    // Same tracking magnet effect
+    tl.to(chars2, {
+        x: 0,
+        y: 0,
+        z: 0,
+        scale: 1,
+        color: "#ffffff",
+        opacity: 1,
+        duration: 1.5,
+        stagger: {
+            each: 0.05,
+            from: "random"
+        },
+        ease: "expo.in"
+    }, 1.5); // Overlap slightly
+
+    // Impact Flash for Tech
+    tl.to(chars2, {
+        textShadow: "0 0 30px white, 0 0 10px violet",
+        duration: 0.1,
+        ease: "power1.out"
+    }, ">-0.2")
+        .to(chars2, {
+            textShadow: "0 0 0px transparent",
+            duration: 0.5,
+            ease: "power2.out"
+        });
+
+
+    // Phase 3: Hold and Admire
+    tl.to({}, { duration: 0.5 });
+
+    // Phase 4: Elegant Reveal (Eyelid)
+    tl.to(revealLine, {
+        scaleX: 1,
+        duration: 0.6,
+        ease: "power4.inOut"
+    });
+
+    // Content fade out
+    tl.to(content, {
+        opacity: 0,
+        scale: 0.95,
+        duration: 0.4,
+        ease: "power2.in"
+    }, ">-0.2");
+
+    tl.to(canvas, { opacity: 0, duration: 0.4 }, "<");
+
+    // Split
+    tl.to(panelTop, { yPercent: -100, duration: 1.2, ease: "power4.inOut" }, "-=0.2");
+    tl.to(panelBottom, { yPercent: 100, duration: 1.2, ease: "power4.inOut" }, "<");
+    tl.to(revealLine, { opacity: 0, height: "100px", duration: 0.6, ease: "power2.in" }, "<"); // Flare out
+
+    // Cleanup
+    tl.call(function () {
+        cancelAnimationFrame(frameId);
+        loader.style.display = 'none';
+        panelTop.style.display = 'none';
+        panelBottom.style.display = 'none';
+        content.style.display = 'none';
+        canvas.style.display = 'none';
+        if (revealLine) revealLine.style.display = 'none';
+        document.body.style.overflow = '';
+        if (!heroAnimationsStarted) {
+            startHeroAnimations();
+            heroAnimationsStarted = true;
+        }
+        ScrollTrigger.refresh();
+    });
+
+    // Safety
     setTimeout(function () {
         if (panelTop && panelTop.style.display !== 'none') {
-            cancelAnimationFrame(frameId);
             loader.style.display = 'none';
+            document.body.style.overflow = '';
+            // Rough cleanup
             panelTop.style.display = 'none';
             panelBottom.style.display = 'none';
-            content.style.display = 'none';
-            canvas.style.display = 'none';
-            if (revealLine) revealLine.style.display = 'none';
-            document.body.style.overflow = '';
-            if (!heroAnimationsStarted) {
-                startHeroAnimations();
-                heroAnimationsStarted = true;
-            }
+            if (!heroAnimationsStarted) startHeroAnimations();
         }
-    }, 10000);
+    }, 9000);
 }
 
 // Start Intro immediately

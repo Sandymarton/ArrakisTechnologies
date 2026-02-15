@@ -535,22 +535,31 @@ function playIntroAtStart() {
 
     const masterTL = gsap.timeline();
 
-    // Phase 1: All letters fly in simultaneously from their scattered positions
-    masterTL.to(line1Letters, {
-        x: 0,
-        y: 0,
-        rotation: 0,
-        rotateX: 0,
-        rotateY: 0,
-        scale: 1,
-        opacity: 1,
-        duration: 1.6,
-        stagger: {
-            each: 0.04,
-            from: "random"
-        },
-        ease: "back.out(1.2)"
+    // Phase 1: Magnetic assembly — letters drift in slowly then rapidly accelerate into place
+    // Step A: Fade in + start drifting (slow, distant)
+    masterTL.to(allLetters, {
+        opacity: 0.6,
+        scale: 0.7,
+        duration: 0.5,
+        stagger: { each: 0.02, from: "random" },
+        ease: "power1.out"
     })
+        // Step B: Magnetic pull — accelerate to final position (slow start, very fast end)
+        .to(line1Letters, {
+            x: 0,
+            y: 0,
+            rotation: 0,
+            rotateX: 0,
+            rotateY: 0,
+            scale: 1,
+            opacity: 1,
+            duration: 1.8,
+            stagger: {
+                each: 0.03,
+                from: "center"
+            },
+            ease: "power4.in"
+        }, "-=0.1")
         .to(line2Letters, {
             x: 0,
             y: 0,
@@ -559,13 +568,26 @@ function playIntroAtStart() {
             rotateY: 0,
             scale: 1,
             opacity: 1,
-            duration: 1.3,
+            duration: 1.5,
             stagger: {
-                each: 0.03,
-                from: "random"
+                each: 0.025,
+                from: "center"
             },
-            ease: "back.out(1.2)"
-        }, "-=1.0")
+            ease: "power4.in"
+        }, "-=1.3")
+        // Step C: Elastic snap settle (tiny overshoot for magnetic feel)
+        .from(line1Letters, {
+            scale: 0.92,
+            duration: 0.35,
+            stagger: 0.015,
+            ease: "elastic.out(1.5, 0.4)"
+        })
+        .from(line2Letters, {
+            scale: 0.92,
+            duration: 0.3,
+            stagger: 0.012,
+            ease: "elastic.out(1.5, 0.4)"
+        }, "<")
 
         // Phase 2: Glow pulse
         .to(line1Letters, {

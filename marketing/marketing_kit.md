@@ -95,6 +95,29 @@ Best,
 
 ---
 
+### **Email 3: For Restaurant Technologies / Food Blogs**
+**Subject:** 30% of reservations are lost (The "Busy Signal" Problem)
+
+Hi [Name],
+
+I follow [Blog Name] for the latest on hospitality tech.
+
+I'm working with restaurants that are struggling with the staffing crisis. Front-of-house staff are too busy to answer the phone, and voicemails don't get reservations.
+
+I'd love to write a piece for you: **"The Bistro Effect: How AI is ending the 'We're too busy to answer' problem"**.
+
+It covers:
+1.  How voice AI integrates with OpenTable/Resy.
+2.  Handling "What's on the menu?" questions automatically.
+3.  Recovering lost revenue from missed calls during peak service.
+
+Is this something your readers (restaurant owners) would value?
+
+Best,
+[Your Name]
+
+---
+
 ## 3. Social Media Launch (LinkedIn/Twitter)
 
 ### **Post 1: The Announcement**

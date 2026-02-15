@@ -343,103 +343,251 @@ if (calendarModal && closeCalendarBtn) {
 }
 
 // ==========================================
-// INTRO ANIMATION
+// INTRO ANIMATION - PARTICLE TEXT ASSEMBLY
 // ==========================================
 let heroAnimationsStarted = false;
 
 function playIntroAtStart() {
     const loader = document.getElementById('loader');
-    if (!loader) return;
+    const canvas = document.getElementById('loaderCanvas');
+    if (!loader || !canvas) return;
 
-    // Safety check: if GSAP isn't loaded, hide loader immediately
+    // Safety check
     if (typeof gsap === 'undefined') {
-        console.error("GSAP not loaded");
         loader.style.display = 'none';
-        if (!heroAnimationsStarted) {
-            startHeroAnimations();
-            heroAnimationsStarted = true;
-        }
+        startHeroAnimations();
         return;
     }
 
-    // Fail-safe: Force remove loader after 4 seconds max
-    setTimeout(() => {
-        if (loader.style.display !== 'none') {
-            console.warn("Intro animation timed out, forcing close");
-            gsap.to(loader, {
-                duration: 0.5,
-                opacity: 0,
-                onComplete: () => {
-                    loader.style.display = 'none';
-                    document.body.style.overflow = '';
-                    if (!heroAnimationsStarted) {
-                        startHeroAnimations();
-                        heroAnimationsStarted = true;
-                    }
-                }
-            });
-        }
-    }, 4000);
-
-    // Disable scrolling
     document.body.style.overflow = 'hidden';
 
-    try {
-        const tl = gsap.timeline({
-            onComplete: () => {
-                // Re-enable scrolling
-                document.body.style.overflow = '';
-                loader.style.display = 'none';
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
 
-                if (!heroAnimationsStarted) {
-                    startHeroAnimations();
-                    heroAnimationsStarted = true;
-                }
+    // Set canvas size
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    ctx.scale(dpr, dpr);
 
-                // Refresh scroll triggers just in case
-                ScrollTrigger.refresh();
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+
+    // ---- Get text pixel data ----
+    const fontSize = Math.min(W * 0.06, 60);
+    const offscreen = document.createElement('canvas');
+    offscreen.width = W;
+    offscreen.height = H;
+    const offCtx = offscreen.getContext('2d');
+
+    // Draw "ARRAKIS" on first line, "TECHNOLOGIES" on second
+    offCtx.fillStyle = '#fff';
+    offCtx.font = `900 ${fontSize}px Inter, sans-serif`;
+    offCtx.textAlign = 'center';
+    offCtx.textBaseline = 'middle';
+    offCtx.fillText('ARRAKIS', W / 2, H / 2 - fontSize * 0.7);
+    offCtx.fillText('TECHNOLOGIES', W / 2, H / 2 + fontSize * 0.7);
+
+    // Sample pixels
+    const imageData = offCtx.getImageData(0, 0, W, H);
+    const pixels = imageData.data;
+    const gap = 4; // Sample every 4 pixels for density
+    const targets = [];
+
+    for (let y = 0; y < H; y += gap) {
+        for (let x = 0; x < W; x += gap) {
+            const i = (y * W + x) * 4;
+            if (pixels[i + 3] > 128) { // Alpha > 128
+                targets.push({ x, y });
             }
-        });
-
-        // 1. Reveal letters
-        tl.to('.letter', {
-            duration: 0.8,
-            opacity: 1,
-            y: 0,
-            rotateX: 0,
-            stagger: 0.05,
-            ease: "back.out(1.7)"
-        })
-            // 2. Add Glow
-            .to('.loader-text', {
-                duration: 0.5,
-                textShadow: "0 0 30px rgba(139, 92, 246, 0.8), 0 0 60px rgba(139, 92, 246, 0.4)",
-                color: "#fff",
-                ease: "power2.inOut"
-            })
-            .to('.loader-text', {
-                duration: 0.5,
-                textShadow: "0 0 10px rgba(139, 92, 246, 0.5)",
-                ease: "power2.inOut"
-            })
-            // 3. Hold for a moment
-            .to({}, { duration: 0.5 })
-            // 4. Fade out loader
-            .to('#loader', {
-                duration: 1,
-                opacity: 0,
-                ease: "power2.inOut"
-            });
-    } catch (e) {
-        console.error("Animation error:", e);
-        loader.style.display = 'none';
-        document.body.style.overflow = '';
-        if (!heroAnimationsStarted) {
-            startHeroAnimations();
-            heroAnimationsStarted = true;
         }
     }
+
+    // ---- Create particles ----
+    const particles = targets.map(t => {
+        // Random start position (scattered)
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.random() * Math.max(W, H) * 0.8 + 200;
+        return {
+            // Current position (start scattered)
+            x: W / 2 + Math.cos(angle) * dist,
+            y: H / 2 + Math.sin(angle) * dist,
+            // Target position (text)
+            tx: t.x,
+            ty: t.y,
+            // Visual properties
+            size: Math.random() * 2.5 + 0.5,
+            alpha: 0,
+            // Color: mix of brand purple and accent orange
+            hue: Math.random() > 0.7 ? 20 + Math.random() * 20 : 260 + Math.random() * 20,
+            sat: 80 + Math.random() * 20,
+            // Physics
+            vx: 0,
+            vy: 0,
+            // State
+            assembled: false,
+            explodeAngle: Math.random() * Math.PI * 2,
+            explodeSpeed: Math.random() * 8 + 3
+        };
+    });
+
+    // ---- Background stars ----
+    const stars = [];
+    for (let i = 0; i < 150; i++) {
+        stars.push({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            size: Math.random() * 1.5 + 0.3,
+            alpha: Math.random() * 0.6 + 0.1,
+            twinkleSpeed: Math.random() * 0.02 + 0.005
+        });
+    }
+
+    // ---- Animation state ----
+    let phase = 'converge'; // converge -> hold -> explode -> fadeout
+    let frameId;
+    let time = 0;
+    let holdTimer = 0;
+    let explodeTimer = 0;
+    let globalAlpha = 1;
+
+    // GSAP: Animate particles to their target positions
+    particles.forEach((p, i) => {
+        const delay = Math.random() * 0.8;
+        gsap.to(p, {
+            x: p.tx,
+            y: p.ty,
+            alpha: 1,
+            duration: 1.5 + Math.random() * 0.5,
+            delay: delay,
+            ease: "power3.inOut",
+            onComplete: () => { p.assembled = true; }
+        });
+    });
+
+    // After convergence, trigger hold then explode
+    gsap.delayedCall(2.8, () => {
+        phase = 'hold';
+        gsap.delayedCall(0.8, () => {
+            phase = 'explode';
+            // Explode particles outward
+            particles.forEach((p) => {
+                gsap.to(p, {
+                    x: p.x + Math.cos(p.explodeAngle) * p.explodeSpeed * 80,
+                    y: p.y + Math.sin(p.explodeAngle) * p.explodeSpeed * 80,
+                    alpha: 0,
+                    size: 0,
+                    duration: 1.2,
+                    ease: "power2.in"
+                });
+            });
+            gsap.delayedCall(0.6, () => {
+                phase = 'fadeout';
+                gsap.to({ val: 1 }, {
+                    val: 0,
+                    duration: 0.8,
+                    ease: "power2.inOut",
+                    onUpdate: function () { globalAlpha = this.targets()[0].val; },
+                    onComplete: () => {
+                        cancelAnimationFrame(frameId);
+                        loader.style.display = 'none';
+                        document.body.style.overflow = '';
+                        if (!heroAnimationsStarted) {
+                            startHeroAnimations();
+                            heroAnimationsStarted = true;
+                        }
+                        ScrollTrigger.refresh();
+                    }
+                });
+            });
+        });
+    });
+
+    // ---- Render loop ----
+    function render() {
+        time += 0.016;
+        ctx.globalAlpha = globalAlpha;
+        ctx.clearRect(0, 0, W, H);
+
+        // Draw background
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, W, H);
+
+        // Draw stars with twinkle
+        stars.forEach(s => {
+            const flicker = Math.sin(time * s.twinkleSpeed * 60) * 0.3 + 0.7;
+            ctx.beginPath();
+            ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha * flicker})`;
+            ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // Draw particles
+        particles.forEach(p => {
+            if (p.alpha <= 0) return;
+            ctx.beginPath();
+
+            // Glow effect during hold phase
+            let glowSize = p.size;
+            let glowAlpha = p.alpha;
+            if (phase === 'hold') {
+                const pulse = Math.sin(time * 8) * 0.3 + 0.7;
+                glowSize = p.size * (1 + pulse * 0.5);
+                glowAlpha = p.alpha * (0.8 + pulse * 0.2);
+            }
+
+            // Outer glow
+            const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowSize * 4);
+            gradient.addColorStop(0, `hsla(${p.hue}, ${p.sat}%, 70%, ${glowAlpha * 0.8})`);
+            gradient.addColorStop(0.4, `hsla(${p.hue}, ${p.sat}%, 50%, ${glowAlpha * 0.3})`);
+            gradient.addColorStop(1, `hsla(${p.hue}, ${p.sat}%, 50%, 0)`);
+            ctx.fillStyle = gradient;
+            ctx.arc(p.x, p.y, glowSize * 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Core
+            ctx.beginPath();
+            ctx.fillStyle = `hsla(${p.hue}, ${p.sat}%, 85%, ${glowAlpha})`;
+            ctx.arc(p.x, p.y, glowSize, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // Connecting lines during hold (subtle web effect)
+        if (phase === 'hold') {
+            ctx.strokeStyle = 'rgba(139, 92, 246, 0.03)';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < particles.length; i += 8) {
+                for (let j = i + 8; j < particles.length; j += 8) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < 30) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        frameId = requestAnimationFrame(render);
+    }
+
+    render();
+
+    // Fail-safe
+    setTimeout(() => {
+        if (loader.style.display !== 'none') {
+            cancelAnimationFrame(frameId);
+            loader.style.display = 'none';
+            document.body.style.overflow = '';
+            if (!heroAnimationsStarted) {
+                startHeroAnimations();
+                heroAnimationsStarted = true;
+            }
+        }
+    }, 7000);
 }
 
-// Start Intro immediately (DOM is ready since script is at bottom of body)
+// Start Intro immediately
 playIntroAtStart();

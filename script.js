@@ -343,12 +343,13 @@ if (calendarModal && closeCalendarBtn) {
 }
 
 // ==========================================
-// INTRO ANIMATION - PREMIUM CINEMATIC REVEAL
+// INTRO ANIMATION - SOUND WAVES + MAGNETIC ASSEMBLY
 // ==========================================
 let heroAnimationsStarted = false;
 
 function playIntroAtStart() {
     const loader = document.getElementById('loader');
+    const canvas = document.getElementById('loaderCanvas');
     const panelTop = document.getElementById('loaderOverlayTop');
     const panelBottom = document.getElementById('loaderOverlayBottom');
     const content = document.getElementById('loaderContent');
@@ -356,19 +357,88 @@ function playIntroAtStart() {
     const line2 = document.getElementById('loaderLine2');
     const revealLine = document.getElementById('loaderRevealLine');
 
-    if (!loader || !panelTop || !panelBottom || !content || !line1 || !line2) return;
+    if (!loader || !canvas || !panelTop || !panelBottom || !content || !line1 || !line2) return;
 
     if (typeof gsap === 'undefined') {
         loader.style.display = 'none';
-        if (panelTop) panelTop.style.display = 'none';
-        if (panelBottom) panelBottom.style.display = 'none';
-        if (content) content.style.display = 'none';
+        panelTop.style.display = 'none';
+        panelBottom.style.display = 'none';
+        content.style.display = 'none';
         if (revealLine) revealLine.style.display = 'none';
         startHeroAnimations();
         return;
     }
 
     document.body.style.overflow = 'hidden';
+
+    // ---- Canvas: Animated Sound Waves ----
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    ctx.scale(dpr, dpr);
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    let time = 0;
+    let frameId;
+
+    // Sound wave config — multiple waves with different properties
+    const waves = [];
+    for (let i = 0; i < 8; i++) {
+        waves.push({
+            amplitude: 15 + Math.random() * 50,
+            frequency: 0.003 + Math.random() * 0.006,
+            speed: 0.5 + Math.random() * 1.5,
+            phase: Math.random() * Math.PI * 2,
+            yOffset: H * (0.15 + (i / 8) * 0.7),
+            hue: 250 + Math.random() * 30,
+            alpha: 0.08 + Math.random() * 0.15,
+            lineWidth: 1 + Math.random() * 1.5
+        });
+    }
+
+    function renderWaves() {
+        time += 0.016;
+        ctx.clearRect(0, 0, W, H);
+
+        // Deep black background
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, W, H);
+
+        // Draw each sound wave
+        waves.forEach(wave => {
+            ctx.beginPath();
+            ctx.strokeStyle = `hsla(${wave.hue}, 80%, 55%, ${wave.alpha})`;
+            ctx.lineWidth = wave.lineWidth;
+            ctx.shadowColor = `hsla(${wave.hue}, 90%, 50%, ${wave.alpha * 0.6})`;
+            ctx.shadowBlur = 12;
+
+            for (let x = 0; x <= W; x += 2) {
+                const y = wave.yOffset +
+                    Math.sin(x * wave.frequency + time * wave.speed + wave.phase) * wave.amplitude +
+                    Math.sin(x * wave.frequency * 2.3 + time * wave.speed * 0.7) * wave.amplitude * 0.3;
+
+                if (x === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        });
+
+        // Central ambient glow
+        const glowGrad = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.min(W, H) * 0.4);
+        glowGrad.addColorStop(0, 'rgba(139, 92, 246, 0.06)');
+        glowGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = glowGrad;
+        ctx.fillRect(0, 0, W, H);
+
+        frameId = requestAnimationFrame(renderWaves);
+    }
+
+    renderWaves();
 
     // ---- Create letter spans ----
     'ARRAKIS'.split('').forEach(ch => {
@@ -387,68 +457,106 @@ function playIntroAtStart() {
 
     const chars1 = line1.querySelectorAll('.intro-char');
     const chars2 = line2.querySelectorAll('.intro-char');
+    const allChars = [...chars1, ...chars2];
 
-    // ---- Set initial states ----
-    // Title chars: hidden below, scaled down
-    gsap.set(chars1, {
-        opacity: 0,
-        y: 80,
-        rotateX: -40,
-        scale: 0.8
+    // ---- Set initial states: scattered randomly ----
+    chars1.forEach(ch => {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 400 + Math.random() * 600;
+        gsap.set(ch, {
+            x: Math.cos(angle) * dist,
+            y: Math.sin(angle) * dist,
+            rotation: (Math.random() - 0.5) * 360,
+            scale: 0.3 + Math.random() * 0.5,
+            opacity: 0
+        });
     });
 
-    // Subtitle: hidden
-    gsap.set(chars2, {
-        opacity: 0
-    });
-
-    // Line2 container: compressed letter-spacing
-    gsap.set(line2, {
-        letterSpacing: '0.1em'
+    chars2.forEach(ch => {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 300 + Math.random() * 500;
+        gsap.set(ch, {
+            x: Math.cos(angle) * dist,
+            y: Math.sin(angle) * dist,
+            rotation: (Math.random() - 0.5) * 360,
+            scale: 0.3 + Math.random() * 0.5,
+            opacity: 0
+        });
     });
 
     // ---- Master Timeline ----
-    const tl = gsap.timeline({
-        defaults: {
-            ease: "power4.inOut"
-        }
-    });
+    const tl = gsap.timeline();
 
-    // Phase 1: Title characters stagger in (1.4s)
-    tl.to(chars1, {
-        opacity: 1,
-        y: 0,
-        rotateX: 0,
-        scale: 1,
-        duration: 1.2,
-        stagger: 0.06,
-        ease: "power4.out"
+    // Phase 1: Letters appear scattered (fade in at random positions)
+    tl.to(allChars, {
+        opacity: 0.4,
+        duration: 0.6,
+        stagger: { each: 0.03, from: "random" },
+        ease: "power2.out"
     }, 0.3)
 
-        // Phase 2: Subtitle fades in with letter-spacing expansion (0.8s)
-        .to(chars2, {
+        // Phase 2: MAGNETIC PULL — letters fly to position
+        // Slow start → fast end = power4.in (like being sucked in by a magnet)
+        .to(chars1, {
+            x: 0,
+            y: 0,
+            rotation: 0,
+            scale: 1,
             opacity: 1,
-            duration: 0.8,
-            stagger: 0.02,
-            ease: "power3.out"
-        }, 1.2)
-        .to(line2, {
-            letterSpacing: '0.5em',
-            duration: 1.0,
-            ease: "power3.out"
+            duration: 1.4,
+            stagger: { each: 0.04, from: "center" },
+            ease: "power4.in"
+        }, 1.0)
+        .to(chars2, {
+            x: 0,
+            y: 0,
+            rotation: 0,
+            scale: 1,
+            opacity: 1,
+            duration: 1.2,
+            stagger: { each: 0.03, from: "center" },
+            ease: "power4.in"
         }, 1.2)
 
-        // Phase 3: Hold — let the viewer read (1s)
-        .to({}, { duration: 1.0 })
+        // Phase 3: Snap impact — slight elastic overshoot on landing
+        .to(chars1, {
+            textShadow: "0 0 40px rgba(139, 92, 246, 1), 0 0 80px rgba(139, 92, 246, 0.5), 0 0 120px rgba(139, 92, 246, 0.2)",
+            scale: 1.05,
+            duration: 0.15,
+            ease: "power2.out"
+        })
+        .to(chars1, {
+            scale: 1,
+            duration: 0.3,
+            ease: "elastic.out(1.2, 0.4)"
+        })
 
-        // Phase 4: Glowing reveal line sweeps in from center (0.6s)
+        // Phase 3b: Subtitle glow
+        .to(chars2, {
+            textShadow: "0 0 20px rgba(139, 92, 246, 0.6), 0 0 40px rgba(139, 92, 246, 0.2)",
+            color: "rgba(255, 255, 255, 0.85)",
+            duration: 0.4,
+            ease: "power2.out"
+        }, "<")
+
+        // Phase 4: Glow settles to soft
+        .to(allChars, {
+            textShadow: "0 0 10px rgba(139, 92, 246, 0.15)",
+            duration: 0.5,
+            ease: "power2.out"
+        })
+
+        // Phase 5: Hold — viewer reads
+        .to({}, { duration: 0.8 })
+
+        // Phase 6: Reveal line sweeps in
         .to(revealLine, {
             scaleX: 1,
             duration: 0.6,
             ease: "power4.inOut"
         })
 
-        // Phase 5: Text fades out (0.4s)
+        // Phase 7: Text fades out
         .to(content, {
             opacity: 0,
             scale: 0.95,
@@ -456,7 +564,14 @@ function playIntroAtStart() {
             ease: "power3.in"
         }, "-=0.2")
 
-        // Phase 6: Panels split apart — the eyelid/slit reveal (1.2s)
+        // Canvas fades
+        .to(canvas, {
+            opacity: 0,
+            duration: 0.4,
+            ease: "power2.in"
+        }, "<")
+
+        // Phase 8: Panels split — eyelid reveal
         .to(panelTop, {
             yPercent: -100,
             duration: 1.2,
@@ -467,8 +582,6 @@ function playIntroAtStart() {
             duration: 1.2,
             ease: "power4.inOut"
         }, "<")
-
-        // Reveal line fades during split
         .to(revealLine, {
             opacity: 0,
             scaleY: 20,
@@ -476,12 +589,14 @@ function playIntroAtStart() {
             ease: "power2.in"
         }, "<")
 
-        // Phase 7: Cleanup
+        // Phase 9: Cleanup
         .call(() => {
+            cancelAnimationFrame(frameId);
             loader.style.display = 'none';
             panelTop.style.display = 'none';
             panelBottom.style.display = 'none';
             content.style.display = 'none';
+            canvas.style.display = 'none';
             if (revealLine) revealLine.style.display = 'none';
             document.body.style.overflow = '';
 
@@ -495,10 +610,12 @@ function playIntroAtStart() {
     // Fail-safe
     setTimeout(() => {
         if (panelTop && panelTop.style.display !== 'none') {
+            cancelAnimationFrame(frameId);
             loader.style.display = 'none';
             panelTop.style.display = 'none';
             panelBottom.style.display = 'none';
             content.style.display = 'none';
+            canvas.style.display = 'none';
             if (revealLine) revealLine.style.display = 'none';
             document.body.style.overflow = '';
             if (!heroAnimationsStarted) {
@@ -506,8 +623,9 @@ function playIntroAtStart() {
                 heroAnimationsStarted = true;
             }
         }
-    }, 9000);
+    }, 10000);
 }
 
 // Start Intro immediately
 playIntroAtStart();
+

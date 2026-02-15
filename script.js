@@ -343,20 +343,27 @@ if (calendarModal && closeCalendarBtn) {
 }
 
 // ==========================================
-// INTRO ANIMATION - 3D OBJECTS + GRAVITY
+// INTRO ANIMATION - PREMIUM CINEMATIC REVEAL
 // ==========================================
 let heroAnimationsStarted = false;
 
 function playIntroAtStart() {
     const loader = document.getElementById('loader');
-    const canvas = document.getElementById('loaderCanvas');
+    const panelTop = document.getElementById('loaderOverlayTop');
+    const panelBottom = document.getElementById('loaderOverlayBottom');
+    const content = document.getElementById('loaderContent');
     const line1 = document.getElementById('loaderLine1');
     const line2 = document.getElementById('loaderLine2');
-    const textWrapper = document.getElementById('loaderTextWrapper');
-    if (!loader || !canvas || !line1 || !line2 || !textWrapper) return;
+    const revealLine = document.getElementById('loaderRevealLine');
+
+    if (!loader || !panelTop || !panelBottom || !content || !line1 || !line2) return;
 
     if (typeof gsap === 'undefined') {
         loader.style.display = 'none';
+        if (panelTop) panelTop.style.display = 'none';
+        if (panelBottom) panelBottom.style.display = 'none';
+        if (content) content.style.display = 'none';
+        if (revealLine) revealLine.style.display = 'none';
         startHeroAnimations();
         return;
     }
@@ -364,282 +371,143 @@ function playIntroAtStart() {
     document.body.style.overflow = 'hidden';
 
     // ---- Create letter spans ----
-    'Arrakis'.split('').forEach(ch => {
+    'ARRAKIS'.split('').forEach(ch => {
         const span = document.createElement('span');
-        span.className = 'intro-letter';
+        span.className = 'intro-char';
         span.textContent = ch;
         line1.appendChild(span);
     });
-    'Technologies'.split('').forEach(ch => {
+
+    'TECHNOLOGIES'.split('').forEach(ch => {
         const span = document.createElement('span');
-        span.className = 'intro-letter';
+        span.className = 'intro-char';
         span.textContent = ch;
         line2.appendChild(span);
     });
 
-    // ---- Canvas: Animated 3D wireframe objects ----
-    const ctx = canvas.getContext('2d');
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = window.innerWidth * dpr;
-    canvas.height = window.innerHeight * dpr;
-    ctx.scale(dpr, dpr);
-    const W = window.innerWidth;
-    const H = window.innerHeight;
-    let time = 0;
-    let frameId;
+    const chars1 = line1.querySelectorAll('.intro-char');
+    const chars2 = line2.querySelectorAll('.intro-char');
 
-    // ---- 3D Shape definitions ----
-    function cubeVertices(s) {
-        return [[-s, -s, -s], [s, -s, -s], [s, s, -s], [-s, s, -s], [-s, -s, s], [s, -s, s], [s, s, s], [-s, s, s]];
-    }
-    const cubeEdges = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]];
-
-    function octaVertices(s) {
-        return [[s, 0, 0], [-s, 0, 0], [0, s, 0], [0, -s, 0], [0, 0, s], [0, 0, -s]];
-    }
-    const octaEdges = [[0, 2], [0, 3], [0, 4], [0, 5], [1, 2], [1, 3], [1, 4], [1, 5], [2, 4], [2, 5], [3, 4], [3, 5]];
-
-    function diamondVertices(s) {
-        return [[0, -s * 1.5, 0], [s, 0, -s], [-s, 0, -s], [-s, 0, s], [s, 0, s], [0, s * 1.5, 0]];
-    }
-    const diamondEdges = [[0, 1], [0, 2], [0, 3], [0, 4], [1, 2], [2, 3], [3, 4], [4, 1], [5, 1], [5, 2], [5, 3], [5, 4]];
-
-    // 3D projection
-    function project(x, y, z, cx, cy, fov) {
-        const scale = fov / (fov + z);
-        return { x: cx + x * scale, y: cy + y * scale, s: scale };
-    }
-
-    // Rotate point
-    function rotate(verts, ax, ay, az) {
-        return verts.map(([x, y, z]) => {
-            // Rotate X
-            let y1 = y * Math.cos(ax) - z * Math.sin(ax);
-            let z1 = y * Math.sin(ax) + z * Math.cos(ax);
-            // Rotate Y
-            let x1 = x * Math.cos(ay) + z1 * Math.sin(ay);
-            let z2 = -x * Math.sin(ay) + z1 * Math.cos(ay);
-            // Rotate Z
-            let x2 = x1 * Math.cos(az) - y1 * Math.sin(az);
-            let y2 = x1 * Math.sin(az) + y1 * Math.cos(az);
-            return [x2, y2, z2];
-        });
-    }
-
-    // Create 3D objects
-    const shapes = [];
-    const shapeTypes = ['cube', 'octa', 'diamond'];
-    for (let i = 0; i < 14; i++) {
-        const type = shapeTypes[i % 3];
-        const size = 20 + Math.random() * 40;
-        shapes.push({
-            type,
-            size,
-            x: (Math.random() - 0.5) * W * 1.2,
-            y: (Math.random() - 0.5) * H * 1.2,
-            z: Math.random() * 400 + 100,
-            rx: Math.random() * Math.PI * 2,
-            ry: Math.random() * Math.PI * 2,
-            rz: Math.random() * Math.PI * 2,
-            drx: (Math.random() - 0.5) * 0.015,
-            dry: (Math.random() - 0.5) * 0.015,
-            drz: (Math.random() - 0.5) * 0.01,
-            vx: (Math.random() - 0.5) * 0.3,
-            vy: (Math.random() - 0.5) * 0.3,
-            hue: 250 + Math.random() * 30,
-            alpha: 0.15 + Math.random() * 0.25
-        });
-    }
-
-    function renderBackground() {
-        time += 0.005;
-        ctx.clearRect(0, 0, W, H);
-
-        // Deep dark background with subtle gradient
-        const bgGrad = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.7);
-        bgGrad.addColorStop(0, '#08001a');
-        bgGrad.addColorStop(1, '#020010');
-        ctx.fillStyle = bgGrad;
-        ctx.fillRect(0, 0, W, H);
-
-        // Draw each 3D shape
-        shapes.forEach(sh => {
-            // Update rotation
-            sh.rx += sh.drx;
-            sh.ry += sh.dry;
-            sh.rz += sh.drz;
-
-            // Gentle drift
-            sh.x += sh.vx;
-            sh.y += sh.vy;
-            if (sh.x < -W * 0.7 || sh.x > W * 0.7) sh.vx *= -1;
-            if (sh.y < -H * 0.7 || sh.y > H * 0.7) sh.vy *= -1;
-
-            // Get vertices and edges by type
-            let verts, edges;
-            if (sh.type === 'cube') {
-                verts = cubeVertices(sh.size);
-                edges = cubeEdges;
-            } else if (sh.type === 'octa') {
-                verts = octaVertices(sh.size);
-                edges = octaEdges;
-            } else {
-                verts = diamondVertices(sh.size);
-                edges = diamondEdges;
-            }
-
-            // Rotate
-            const rotated = rotate(verts, sh.rx, sh.ry, sh.rz);
-
-            // Project to 2D
-            const cx = W / 2 + sh.x;
-            const cy = H / 2 + sh.y;
-            const projected = rotated.map(([x, y, z]) => project(x, y, z + sh.z, cx, cy, 600));
-
-            // Draw edges with glow
-            const depthAlpha = Math.max(0.05, 1 - sh.z / 600) * sh.alpha;
-            ctx.strokeStyle = `hsla(${sh.hue}, 70%, 60%, ${depthAlpha})`;
-            ctx.lineWidth = Math.max(0.5, 1.5 * (1 - sh.z / 600));
-            ctx.shadowColor = `hsla(${sh.hue}, 80%, 50%, ${depthAlpha * 0.5})`;
-            ctx.shadowBlur = 8;
-
-            edges.forEach(([a, b]) => {
-                ctx.beginPath();
-                ctx.moveTo(projected[a].x, projected[a].y);
-                ctx.lineTo(projected[b].x, projected[b].y);
-                ctx.stroke();
-            });
-
-            // Draw vertices as dots
-            ctx.shadowBlur = 4;
-            projected.forEach(p => {
-                ctx.beginPath();
-                ctx.fillStyle = `hsla(${sh.hue}, 80%, 70%, ${depthAlpha * 0.8})`;
-                ctx.arc(p.x, p.y, Math.max(1, 2.5 * p.s), 0, Math.PI * 2);
-                ctx.fill();
-            });
-
-            ctx.shadowBlur = 0;
-        });
-
-        frameId = requestAnimationFrame(renderBackground);
-    }
-
-    renderBackground();
-
-    // ---- GSAP: Gravity drop letters ----
-    const line1Letters = line1.querySelectorAll('.intro-letter');
-    const line2Letters = line2.querySelectorAll('.intro-letter');
-    const allLetters = document.querySelectorAll('.intro-letter');
-
-    // Set each letter to a random position ABOVE the viewport
-    line1Letters.forEach(letter => {
-        gsap.set(letter, {
-            y: -(300 + Math.random() * 500),
-            x: (Math.random() - 0.5) * 100,
-            rotation: (Math.random() - 0.5) * 40,
-            opacity: 0
-        });
+    // ---- Set initial states ----
+    // Title chars: hidden below, scaled down
+    gsap.set(chars1, {
+        opacity: 0,
+        y: 80,
+        rotateX: -40,
+        scale: 0.8
     });
 
-    line2Letters.forEach(letter => {
-        gsap.set(letter, {
-            y: -(250 + Math.random() * 400),
-            x: (Math.random() - 0.5) * 60,
-            rotation: (Math.random() - 0.5) * 30,
-            opacity: 0
-        });
+    // Subtitle: hidden
+    gsap.set(chars2, {
+        opacity: 0
     });
 
-    const masterTL = gsap.timeline();
+    // Line2 container: compressed letter-spacing
+    gsap.set(line2, {
+        letterSpacing: '0.1em'
+    });
 
-    // Phase 1: Letters fall with gravity (bounce on landing)
-    masterTL.to(line1Letters, {
-        y: 0,
-        x: 0,
-        rotation: 0,
+    // ---- Master Timeline ----
+    const tl = gsap.timeline({
+        defaults: {
+            ease: "power4.inOut"
+        }
+    });
+
+    // Phase 1: Title characters stagger in (1.4s)
+    tl.to(chars1, {
         opacity: 1,
+        y: 0,
+        rotateX: 0,
+        scale: 1,
         duration: 1.2,
-        stagger: {
-            each: 0.07,
-            from: "center"
-        },
-        ease: "bounce.out"
-    })
-        .to(line2Letters, {
-            y: 0,
-            x: 0,
-            rotation: 0,
-            opacity: 1,
-            duration: 1.0,
-            stagger: {
-                each: 0.05,
-                from: "center"
-            },
-            ease: "bounce.out"
-        }, "-=0.6")
+        stagger: 0.06,
+        ease: "power4.out"
+    }, 0.3)
 
-        // Phase 2: Glow pulse once assembled
-        .to(line1Letters, {
-            textShadow: "0 0 30px rgba(139, 92, 246, 1), 0 0 60px rgba(139, 92, 246, 0.5), 0 0 100px rgba(139, 92, 246, 0.2)",
-            color: "#fff",
+        // Phase 2: Subtitle fades in with letter-spacing expansion (0.8s)
+        .to(chars2, {
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.02,
+            ease: "power3.out"
+        }, 1.2)
+        .to(line2, {
+            letterSpacing: '0.5em',
+            duration: 1.0,
+            ease: "power3.out"
+        }, 1.2)
+
+        // Phase 3: Hold — let the viewer read (1s)
+        .to({}, { duration: 1.0 })
+
+        // Phase 4: Glowing reveal line sweeps in from center (0.6s)
+        .to(revealLine, {
+            scaleX: 1,
             duration: 0.6,
-            ease: "power2.inOut"
-        }, "+=0.1")
-        .to(line2Letters, {
-            textShadow: "0 0 20px rgba(139, 92, 246, 0.8), 0 0 40px rgba(139, 92, 246, 0.3)",
-            color: "rgba(255, 255, 255, 0.85)",
-            duration: 0.6,
-            ease: "power2.inOut"
+            ease: "power4.inOut"
+        })
+
+        // Phase 5: Text fades out (0.4s)
+        .to(content, {
+            opacity: 0,
+            scale: 0.95,
+            duration: 0.4,
+            ease: "power3.in"
+        }, "-=0.2")
+
+        // Phase 6: Panels split apart — the eyelid/slit reveal (1.2s)
+        .to(panelTop, {
+            yPercent: -100,
+            duration: 1.2,
+            ease: "power4.inOut"
+        })
+        .to(panelBottom, {
+            yPercent: 100,
+            duration: 1.2,
+            ease: "power4.inOut"
         }, "<")
 
-        // Phase 3: Glow settles
-        .to(allLetters, {
-            textShadow: "0 0 12px rgba(139, 92, 246, 0.3)",
-            duration: 0.4,
-            ease: "power2.out"
-        })
-
-        // Phase 4: Hold
-        .to({}, { duration: 0.5 })
-
-        // Phase 5: ZOOM OUT reveal — text + wrapper scales down, fades
-        .to(textWrapper, {
-            scale: 0.4,
+        // Reveal line fades during split
+        .to(revealLine, {
             opacity: 0,
-            duration: 1.2,
-            ease: "power3.inOut"
-        })
-        .to(loader, {
-            opacity: 0,
+            scaleY: 20,
             duration: 0.6,
-            ease: "power2.inOut",
-            onComplete: () => {
-                cancelAnimationFrame(frameId);
-                loader.style.display = 'none';
-                document.body.style.overflow = '';
-                if (!heroAnimationsStarted) {
-                    startHeroAnimations();
-                    heroAnimationsStarted = true;
-                }
-                ScrollTrigger.refresh();
+            ease: "power2.in"
+        }, "<")
+
+        // Phase 7: Cleanup
+        .call(() => {
+            loader.style.display = 'none';
+            panelTop.style.display = 'none';
+            panelBottom.style.display = 'none';
+            content.style.display = 'none';
+            if (revealLine) revealLine.style.display = 'none';
+            document.body.style.overflow = '';
+
+            if (!heroAnimationsStarted) {
+                startHeroAnimations();
+                heroAnimationsStarted = true;
             }
-        }, "-=0.4");
+            ScrollTrigger.refresh();
+        });
 
     // Fail-safe
     setTimeout(() => {
-        if (loader.style.display !== 'none') {
-            cancelAnimationFrame(frameId);
+        if (panelTop && panelTop.style.display !== 'none') {
             loader.style.display = 'none';
+            panelTop.style.display = 'none';
+            panelBottom.style.display = 'none';
+            content.style.display = 'none';
+            if (revealLine) revealLine.style.display = 'none';
             document.body.style.overflow = '';
             if (!heroAnimationsStarted) {
                 startHeroAnimations();
                 heroAnimationsStarted = true;
             }
         }
-    }, 8000);
+    }, 9000);
 }
 
 // Start Intro immediately
 playIntroAtStart();
-

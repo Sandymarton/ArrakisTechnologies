@@ -32,6 +32,74 @@
     <!-- Calendly Badge Widget -->
     <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
     <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "name": "Arrakis Technologies",
+          "url": "https://arrakistechnologies.com/",
+          "logo": "https://arrakistechnologies.com/assets/logo.png",
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "",
+            "contactType": "customer service",
+            "email": "info@arrakistechnologies.com",
+            "areaServed": ["US", "GB", "EU"],
+            "availableLanguage": ["English"]
+          }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "AI Voice Receptionist",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Cloud-based",
+          "offers": {
+            "@type": "Offer",
+            "price": "795.00",
+            "priceCurrency": "GBP"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "ratingCount": "84"
+          }
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How is this different from a basic answering service?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Basic answering services just take messages. We build an integrated revenue system. Our AI qualifies leads, books appointments, performs automated follow-ups, tracks revenue impact, and continuously optimizes based on data."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Does the AI voice sound robotic?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "No. We utilize advanced neural voice technology for natural, human-like conversation. The AI understands context, handles objections naturally, and matches your brand's tone. Most callers do not realize they are speaking with an AI."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is my data secure?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. Our infrastructure is SOC 2 Type II certified, GDPR compliant, and ready for HIPAA integration. Your data is encrypted end-to-end and never sold."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
 </head>
 
 <body>
@@ -299,7 +367,9 @@
                             <li>Complex objection handling</li>
                             <li>Multi-turn conversation flow</li>
                         </ul>
-                        <div class="demo-button" id="audioDemoBtn">🔊 Audit a Live Interaction</div>
+                        <button class="demo-button" id="audioDemoBtn"
+                            style="cursor:pointer; font-family:inherit; font-size: 1rem;">🔊 Audit a Live
+                            Interaction</button>
                     </div>
 
                     <div class="feature-card">

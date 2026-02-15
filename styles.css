@@ -1264,7 +1264,7 @@ section {
 #loader {
     position: fixed;
     inset: 0;
-    background-color: #030014;
+    background-color: #010008;
     z-index: 9999;
     overflow: hidden;
 }
@@ -1280,38 +1280,43 @@ section {
 #loaderTextWrapper {
     position: absolute;
     inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
     z-index: 2;
-    perspective: 1200px;
+    pointer-events: none;
 }
 
 #loaderLine1,
 #loaderLine2 {
+    position: absolute;
+    left: 50%;
     display: flex;
-    gap: 0;
+    transform: translateX(-50%);
     transform-style: preserve-3d;
+}
+
+#loaderLine1 {
+    top: calc(50% - 3vw);
+}
+
+#loaderLine2 {
+    top: calc(50% + 2.5vw);
 }
 
 .intro-letter {
     font-family: 'Rounded Elegance', 'Outfit', sans-serif;
-    font-size: clamp(2rem, 5vw, 4.5rem);
+    font-size: clamp(2.5rem, 5.5vw, 5rem);
     font-weight: 400;
     color: #fff;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     display: inline-block;
+    position: relative;
     opacity: 0;
     transform-style: preserve-3d;
     will-change: transform, opacity;
-    text-shadow: 0 0 0 transparent;
 }
 
 #loaderLine2 .intro-letter {
-    font-size: clamp(1rem, 2.5vw, 2rem);
-    letter-spacing: 0.35em;
-    color: rgba(255, 255, 255, 0.7);
+    font-size: clamp(1rem, 2.2vw, 1.8rem);
+    letter-spacing: 0.4em;
+    color: rgba(255, 255, 255, 0.65);
 }

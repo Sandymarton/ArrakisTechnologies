@@ -343,7 +343,7 @@ if (calendarModal && closeCalendarBtn) {
 }
 
 // ==========================================
-// INTRO ANIMATION - TECH PERSPECTIVE
+// INTRO ANIMATION - SCATTERED 3D LETTERS
 // ==========================================
 let heroAnimationsStarted = false;
 
@@ -363,24 +363,20 @@ function playIntroAtStart() {
     document.body.style.overflow = 'hidden';
 
     // ---- Create letter spans ----
-    const text1 = 'Arrakis';
-    const text2 = 'Technologies';
-
-    text1.split('').forEach(ch => {
+    'Arrakis'.split('').forEach(ch => {
         const span = document.createElement('span');
         span.className = 'intro-letter';
         span.textContent = ch;
         line1.appendChild(span);
     });
-
-    text2.split('').forEach(ch => {
+    'Technologies'.split('').forEach(ch => {
         const span = document.createElement('span');
         span.className = 'intro-letter';
         span.textContent = ch;
         line2.appendChild(span);
     });
 
-    // ---- Canvas: Animated tech grid background ----
+    // ---- Canvas: 3D Perspective Grid ----
     const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
     canvas.width = window.innerWidth * dpr;
@@ -388,211 +384,232 @@ function playIntroAtStart() {
     ctx.scale(dpr, dpr);
     const W = window.innerWidth;
     const H = window.innerHeight;
-
-    // Grid config
-    const gridSpacing = 60;
-    const cols = Math.ceil(W / gridSpacing) + 2;
-    const rows = Math.ceil(H / gridSpacing) + 2;
     let time = 0;
     let frameId;
 
-    // Flowing gradient nodes (intersection highlights)
-    const nodes = [];
-    for (let i = 0; i < 12; i++) {
-        nodes.push({
-            x: Math.random() * W,
-            y: Math.random() * H,
-            vx: (Math.random() - 0.5) * 0.8,
-            vy: (Math.random() - 0.5) * 0.8,
-            radius: 150 + Math.random() * 200,
-            hue: Math.random() > 0.5 ? 265 : 25, // purple or orange
-            alpha: 0.08 + Math.random() * 0.06
-        });
-    }
+    // Vanishing point
+    const vpX = W / 2;
+    const vpY = H * 0.42;
 
-    function renderGrid() {
-        time += 0.008;
+    function renderBackground() {
+        time += 0.004;
         ctx.clearRect(0, 0, W, H);
 
-        // Dark gradient background
-        const bgGrad = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.7);
-        bgGrad.addColorStop(0, '#0a0520');
-        bgGrad.addColorStop(1, '#030014');
-        ctx.fillStyle = bgGrad;
+        // Very dark background
+        ctx.fillStyle = '#010008';
         ctx.fillRect(0, 0, W, H);
 
-        // Move nodes
-        nodes.forEach(n => {
-            n.x += n.vx;
-            n.y += n.vy;
-            if (n.x < -100 || n.x > W + 100) n.vx *= -1;
-            if (n.y < -100 || n.y > H + 100) n.vy *= -1;
-        });
+        // Subtle radial ambient glow from center
+        const ambientGrad = ctx.createRadialGradient(vpX, vpY, 0, vpX, vpY, Math.max(W, H) * 0.6);
+        ambientGrad.addColorStop(0, 'rgba(60, 20, 120, 0.08)');
+        ambientGrad.addColorStop(0.5, 'rgba(30, 10, 80, 0.03)');
+        ambientGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = ambientGrad;
+        ctx.fillRect(0, 0, W, H);
 
-        // Draw node glows (ambient light)
-        nodes.forEach(n => {
-            const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.radius);
-            grad.addColorStop(0, `hsla(${n.hue}, 80%, 50%, ${n.alpha})`);
-            grad.addColorStop(1, 'transparent');
-            ctx.fillStyle = grad;
-            ctx.fillRect(n.x - n.radius, n.y - n.radius, n.radius * 2, n.radius * 2);
-        });
+        // ---- 3D Perspective Grid (bottom half - floor plane) ----
+        const horizonY = vpY;
+        const numHLines = 25;
+        const numVLines = 30;
+        const gridSpeed = time * 0.5;
 
-        // Draw grid lines
-        const offsetX = (time * 30) % gridSpacing;
-        const offsetY = (time * 20) % gridSpacing;
+        // Horizontal lines (receding into distance)
+        for (let i = 0; i < numHLines; i++) {
+            const t = ((i / numHLines) + gridSpeed) % 1;
+            const depth = Math.pow(t, 2.5); // Perspective compression
+            const y = horizonY + depth * (H - horizonY);
+            const alpha = depth * 0.18;
 
-        // Vertical lines
-        for (let i = -1; i < cols; i++) {
-            const x = i * gridSpacing + offsetX;
-            // Find proximity to nearest node for brightness
-            let brightness = 0.04;
-            nodes.forEach(n => {
-                const dist = Math.abs(n.x - x);
-                if (dist < n.radius) {
-                    brightness = Math.max(brightness, 0.12 * (1 - dist / n.radius));
-                }
-            });
-            ctx.strokeStyle = `rgba(139, 92, 246, ${brightness})`;
-            ctx.lineWidth = 0.5;
+            // Lines spread wider as they come closer
+            const spread = depth * W * 0.6;
+
+            ctx.strokeStyle = `rgba(100, 60, 200, ${alpha})`;
+            ctx.lineWidth = 0.5 + depth * 1;
             ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, H);
+            ctx.moveTo(vpX - spread - W * 0.1, y);
+            ctx.lineTo(vpX + spread + W * 0.1, y);
             ctx.stroke();
         }
 
-        // Horizontal lines
-        for (let j = -1; j < rows; j++) {
-            const y = j * gridSpacing + offsetY;
-            let brightness = 0.04;
-            nodes.forEach(n => {
-                const dist = Math.abs(n.y - y);
-                if (dist < n.radius) {
-                    brightness = Math.max(brightness, 0.12 * (1 - dist / n.radius));
-                }
-            });
-            ctx.strokeStyle = `rgba(139, 92, 246, ${brightness})`;
+        // Vertical lines (converging to vanishing point)
+        for (let i = -numVLines / 2; i <= numVLines / 2; i++) {
+            const xBottom = vpX + i * (W / numVLines) * 2;
+            const alpha = 0.06 + 0.04 * (1 - Math.abs(i) / (numVLines / 2));
+
+            ctx.strokeStyle = `rgba(100, 60, 200, ${alpha})`;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(W, y);
+            ctx.moveTo(vpX, horizonY);
+            ctx.lineTo(xBottom, H + 50);
             ctx.stroke();
         }
 
-        // Intersection dots (where grid lines cross near nodes)
-        for (let i = -1; i < cols; i++) {
-            for (let j = -1; j < rows; j++) {
-                const x = i * gridSpacing + offsetX;
-                const y = j * gridSpacing + offsetY;
-                let maxBright = 0;
-                nodes.forEach(n => {
-                    const dist = Math.sqrt((n.x - x) ** 2 + (n.y - y) ** 2);
-                    if (dist < n.radius * 0.6) {
-                        maxBright = Math.max(maxBright, 0.5 * (1 - dist / (n.radius * 0.6)));
-                    }
-                });
-                if (maxBright > 0.05) {
-                    ctx.beginPath();
-                    ctx.fillStyle = `rgba(139, 92, 246, ${maxBright})`;
-                    ctx.arc(x, y, 1.5, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
+        // ---- Top half - ceiling grid (mirrored) ----
+        for (let i = 0; i < numHLines; i++) {
+            const t = ((i / numHLines) + gridSpeed) % 1;
+            const depth = Math.pow(t, 2.5);
+            const y = horizonY - depth * horizonY;
+            const alpha = depth * 0.1;
+            const spread = depth * W * 0.6;
+
+            ctx.strokeStyle = `rgba(100, 60, 200, ${alpha})`;
+            ctx.lineWidth = 0.3 + depth * 0.5;
+            ctx.beginPath();
+            ctx.moveTo(vpX - spread - W * 0.1, y);
+            ctx.lineTo(vpX + spread + W * 0.1, y);
+            ctx.stroke();
         }
 
-        frameId = requestAnimationFrame(renderGrid);
+        for (let i = -numVLines / 2; i <= numVLines / 2; i++) {
+            const xTop = vpX + i * (W / numVLines) * 2;
+            const alpha = 0.03 + 0.02 * (1 - Math.abs(i) / (numVLines / 2));
+
+            ctx.strokeStyle = `rgba(100, 60, 200, ${alpha})`;
+            ctx.lineWidth = 0.3;
+            ctx.beginPath();
+            ctx.moveTo(vpX, horizonY);
+            ctx.lineTo(xTop, -50);
+            ctx.stroke();
+        }
+
+        // ---- Horizon glow line ----
+        const horizGrad = ctx.createLinearGradient(0, horizonY - 2, 0, horizonY + 2);
+        horizGrad.addColorStop(0, 'transparent');
+        horizGrad.addColorStop(0.5, `rgba(139, 92, 246, ${0.15 + Math.sin(time * 3) * 0.05})`);
+        horizGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = horizGrad;
+        ctx.fillRect(0, horizonY - 2, W, 4);
+
+        // Wider horizon ambient
+        const horizAmbient = ctx.createRadialGradient(vpX, horizonY, 0, vpX, horizonY, W * 0.5);
+        horizAmbient.addColorStop(0, `rgba(139, 92, 246, ${0.06 + Math.sin(time * 2) * 0.02})`);
+        horizAmbient.addColorStop(1, 'transparent');
+        ctx.fillStyle = horizAmbient;
+        ctx.fillRect(0, horizonY - 80, W, 160);
+
+        frameId = requestAnimationFrame(renderBackground);
     }
 
-    renderGrid();
+    renderBackground();
 
-    // ---- GSAP: Perspective text entrance ----
+    // ---- GSAP: Letters fly in from scattered positions ----
     const allLetters = document.querySelectorAll('.intro-letter');
     const line1Letters = line1.querySelectorAll('.intro-letter');
     const line2Letters = line2.querySelectorAll('.intro-letter');
 
-    // Set initial state: letters far away in Z, rotated, invisible
-    gsap.set(line1Letters, {
-        opacity: 0,
-        z: -2000,
-        rotateY: 90,
-        rotateX: -40,
-        scale: 0.3
-    });
-    gsap.set(line2Letters, {
-        opacity: 0,
-        z: -2000,
-        rotateY: -90,
-        rotateX: 40,
-        scale: 0.3
+    // Give each letter a UNIQUE random starting position from edges
+    allLetters.forEach((letter) => {
+        // Pick a random edge: 0=top, 1=right, 2=bottom, 3=left
+        const edge = Math.floor(Math.random() * 4);
+        let startX, startY;
+
+        switch (edge) {
+            case 0: // top
+                startX = (Math.random() - 0.5) * W * 1.5;
+                startY = -200 - Math.random() * 300;
+                break;
+            case 1: // right
+                startX = W + 200 + Math.random() * 300;
+                startY = (Math.random() - 0.5) * H * 1.5;
+                break;
+            case 2: // bottom
+                startX = (Math.random() - 0.5) * W * 1.5;
+                startY = H + 200 + Math.random() * 300;
+                break;
+            case 3: // left
+                startX = -200 - Math.random() * 300;
+                startY = (Math.random() - 0.5) * H * 1.5;
+                break;
+        }
+
+        gsap.set(letter, {
+            x: startX,
+            y: startY,
+            rotation: (Math.random() - 0.5) * 360,
+            rotateX: (Math.random() - 0.5) * 120,
+            rotateY: (Math.random() - 0.5) * 120,
+            scale: Math.random() * 0.5 + 0.3,
+            opacity: 0
+        });
     });
 
     const masterTL = gsap.timeline();
 
-    // Phase 1: Letters fly in from deep perspective
+    // Phase 1: All letters fly in simultaneously from their scattered positions
     masterTL.to(line1Letters, {
-        opacity: 1,
-        z: 0,
-        rotateY: 0,
+        x: 0,
+        y: 0,
+        rotation: 0,
         rotateX: 0,
+        rotateY: 0,
         scale: 1,
-        duration: 1.4,
-        stagger: 0.06,
-        ease: "expo.out"
+        opacity: 1,
+        duration: 1.6,
+        stagger: {
+            each: 0.04,
+            from: "random"
+        },
+        ease: "back.out(1.2)"
     })
         .to(line2Letters, {
-            opacity: 1,
-            z: 0,
-            rotateY: 0,
+            x: 0,
+            y: 0,
+            rotation: 0,
             rotateX: 0,
+            rotateY: 0,
             scale: 1,
-            duration: 1.2,
-            stagger: 0.04,
-            ease: "expo.out"
-        }, "-=0.8")
+            opacity: 1,
+            duration: 1.3,
+            stagger: {
+                each: 0.03,
+                from: "random"
+            },
+            ease: "back.out(1.2)"
+        }, "-=1.0")
 
-        // Phase 2: Subtle glow pulse on assembled text
+        // Phase 2: Glow pulse
         .to(line1Letters, {
-            textShadow: "0 0 30px rgba(139, 92, 246, 0.9), 0 0 60px rgba(139, 92, 246, 0.4)",
+            textShadow: "0 0 25px rgba(139, 92, 246, 0.9), 0 0 50px rgba(139, 92, 246, 0.4), 0 0 100px rgba(139, 92, 246, 0.15)",
             duration: 0.6,
             ease: "power2.inOut"
-        }, "+=0.2")
+        }, "+=0.15")
         .to(line2Letters, {
-            textShadow: "0 0 20px rgba(255, 107, 53, 0.7), 0 0 40px rgba(255, 107, 53, 0.3)",
+            textShadow: "0 0 15px rgba(139, 92, 246, 0.6), 0 0 30px rgba(139, 92, 246, 0.2)",
             duration: 0.6,
             ease: "power2.inOut"
         }, "<")
 
-        // Phase 3: Glow settles
+        // Phase 3: Glow softens
         .to(allLetters, {
-            textShadow: "0 0 10px rgba(139, 92, 246, 0.3)",
-            duration: 0.5,
+            textShadow: "0 0 8px rgba(139, 92, 246, 0.2)",
+            duration: 0.4,
             ease: "power2.out"
         })
 
-        // Phase 4: Hold
-        .to({}, { duration: 0.3 })
+        // Phase 4: Brief hold
+        .to({}, { duration: 0.4 })
 
-        // Phase 5: Premium reveal - text scales up and fades, loader wipes away
+        // Phase 5: Premium reveal — text scales toward camera and dissolves
         .to(line1Letters, {
-            z: 500,
+            scale: 2.5,
             opacity: 0,
-            scale: 1.5,
-            rotateX: -15,
-            duration: 0.8,
-            stagger: 0.02,
+            y: -30,
+            filter: "blur(8px)",
+            duration: 0.9,
+            stagger: 0.015,
             ease: "power3.in"
         })
         .to(line2Letters, {
-            z: 500,
+            scale: 2,
             opacity: 0,
-            scale: 1.3,
-            duration: 0.6,
-            stagger: 0.02,
+            filter: "blur(6px)",
+            duration: 0.7,
+            stagger: 0.015,
             ease: "power3.in"
-        }, "<")
+        }, "<+0.1")
         .to(loader, {
             opacity: 0,
-            duration: 0.8,
+            duration: 0.7,
             ease: "power2.inOut",
             onComplete: () => {
                 cancelAnimationFrame(frameId);
@@ -604,7 +621,7 @@ function playIntroAtStart() {
                 }
                 ScrollTrigger.refresh();
             }
-        }, "-=0.4");
+        }, "-=0.3");
 
     // Fail-safe
     setTimeout(() => {

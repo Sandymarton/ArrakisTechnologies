@@ -343,7 +343,7 @@ if (calendarModal && closeCalendarBtn) {
 }
 
 // ==========================================
-// INTRO ANIMATION - SCATTERED 3D LETTERS
+// INTRO ANIMATION - DIGITAL DECODE
 // ==========================================
 let heroAnimationsStarted = false;
 
@@ -362,21 +362,29 @@ function playIntroAtStart() {
 
     document.body.style.overflow = 'hidden';
 
-    // ---- Create letter spans ----
-    'Arrakis'.split('').forEach(ch => {
-        const span = document.createElement('span');
-        span.className = 'intro-letter';
-        span.textContent = ch;
-        line1.appendChild(span);
-    });
-    'Technologies'.split('').forEach(ch => {
-        const span = document.createElement('span');
-        span.className = 'intro-letter';
-        span.textContent = ch;
-        line2.appendChild(span);
-    });
+    const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*';
+    const word1 = 'Arrakis';
+    const word2 = 'Technologies';
 
-    // ---- Canvas: 3D Perspective Grid ----
+    // ---- Create character spans ----
+    function createCharSpans(word, container) {
+        const spans = [];
+        word.split('').forEach(ch => {
+            const span = document.createElement('span');
+            span.className = 'decode-char';
+            span.dataset.target = ch.toUpperCase();
+            span.textContent = CHARS[Math.floor(Math.random() * CHARS.length)];
+            container.appendChild(span);
+            spans.push(span);
+        });
+        return spans;
+    }
+
+    const chars1 = createCharSpans(word1, line1);
+    const chars2 = createCharSpans(word2, line2);
+    const allChars = [...chars1, ...chars2];
+
+    // ---- Canvas: Animated dark gradient mesh ----
     const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
     canvas.width = window.innerWidth * dpr;
@@ -387,251 +395,152 @@ function playIntroAtStart() {
     let time = 0;
     let frameId;
 
-    // Vanishing point
-    const vpX = W / 2;
-    const vpY = H * 0.42;
+    // Ambient orbs
+    const orbs = [];
+    for (let i = 0; i < 6; i++) {
+        orbs.push({
+            x: W * (0.2 + Math.random() * 0.6),
+            y: H * (0.2 + Math.random() * 0.6),
+            vx: (Math.random() - 0.5) * 0.3,
+            vy: (Math.random() - 0.5) * 0.3,
+            radius: 200 + Math.random() * 300,
+            hue: 260 + Math.random() * 20,
+            alpha: 0.04 + Math.random() * 0.03
+        });
+    }
 
     function renderBackground() {
-        time += 0.004;
+        time += 0.005;
         ctx.clearRect(0, 0, W, H);
 
-        // Very dark background
-        ctx.fillStyle = '#010008';
+        // Deep dark background
+        ctx.fillStyle = '#020010';
         ctx.fillRect(0, 0, W, H);
 
-        // Subtle radial ambient glow from center
-        const ambientGrad = ctx.createRadialGradient(vpX, vpY, 0, vpX, vpY, Math.max(W, H) * 0.6);
-        ambientGrad.addColorStop(0, 'rgba(60, 20, 120, 0.08)');
-        ambientGrad.addColorStop(0.5, 'rgba(30, 10, 80, 0.03)');
-        ambientGrad.addColorStop(1, 'transparent');
-        ctx.fillStyle = ambientGrad;
-        ctx.fillRect(0, 0, W, H);
+        // Move and draw ambient orbs
+        orbs.forEach(o => {
+            o.x += o.vx;
+            o.y += o.vy;
+            if (o.x < 0 || o.x > W) o.vx *= -1;
+            if (o.y < 0 || o.y > H) o.vy *= -1;
 
-        // ---- 3D Perspective Grid (bottom half - floor plane) ----
-        const horizonY = vpY;
-        const numHLines = 25;
-        const numVLines = 30;
-        const gridSpeed = time * 0.5;
+            const pulse = 1 + Math.sin(time * 2 + o.x * 0.01) * 0.15;
+            const grad = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.radius * pulse);
+            grad.addColorStop(0, `hsla(${o.hue}, 70%, 30%, ${o.alpha})`);
+            grad.addColorStop(0.5, `hsla(${o.hue}, 60%, 15%, ${o.alpha * 0.4})`);
+            grad.addColorStop(1, 'transparent');
+            ctx.fillStyle = grad;
+            ctx.fillRect(o.x - o.radius * pulse, o.y - o.radius * pulse, o.radius * 2 * pulse, o.radius * 2 * pulse);
+        });
 
-        // Horizontal lines (receding into distance)
-        for (let i = 0; i < numHLines; i++) {
-            const t = ((i / numHLines) + gridSpeed) % 1;
-            const depth = Math.pow(t, 2.5); // Perspective compression
-            const y = horizonY + depth * (H - horizonY);
-            const alpha = depth * 0.18;
-
-            // Lines spread wider as they come closer
-            const spread = depth * W * 0.6;
-
-            ctx.strokeStyle = `rgba(100, 60, 200, ${alpha})`;
-            ctx.lineWidth = 0.5 + depth * 1;
-            ctx.beginPath();
-            ctx.moveTo(vpX - spread - W * 0.1, y);
-            ctx.lineTo(vpX + spread + W * 0.1, y);
-            ctx.stroke();
-        }
-
-        // Vertical lines (converging to vanishing point)
-        for (let i = -numVLines / 2; i <= numVLines / 2; i++) {
-            const xBottom = vpX + i * (W / numVLines) * 2;
-            const alpha = 0.06 + 0.04 * (1 - Math.abs(i) / (numVLines / 2));
-
-            ctx.strokeStyle = `rgba(100, 60, 200, ${alpha})`;
-            ctx.lineWidth = 0.5;
-            ctx.beginPath();
-            ctx.moveTo(vpX, horizonY);
-            ctx.lineTo(xBottom, H + 50);
-            ctx.stroke();
-        }
-
-        // ---- Top half - ceiling grid (mirrored) ----
-        for (let i = 0; i < numHLines; i++) {
-            const t = ((i / numHLines) + gridSpeed) % 1;
-            const depth = Math.pow(t, 2.5);
-            const y = horizonY - depth * horizonY;
-            const alpha = depth * 0.1;
-            const spread = depth * W * 0.6;
-
-            ctx.strokeStyle = `rgba(100, 60, 200, ${alpha})`;
-            ctx.lineWidth = 0.3 + depth * 0.5;
-            ctx.beginPath();
-            ctx.moveTo(vpX - spread - W * 0.1, y);
-            ctx.lineTo(vpX + spread + W * 0.1, y);
-            ctx.stroke();
-        }
-
-        for (let i = -numVLines / 2; i <= numVLines / 2; i++) {
-            const xTop = vpX + i * (W / numVLines) * 2;
-            const alpha = 0.03 + 0.02 * (1 - Math.abs(i) / (numVLines / 2));
-
-            ctx.strokeStyle = `rgba(100, 60, 200, ${alpha})`;
-            ctx.lineWidth = 0.3;
-            ctx.beginPath();
-            ctx.moveTo(vpX, horizonY);
-            ctx.lineTo(xTop, -50);
-            ctx.stroke();
-        }
-
-        // ---- Horizon glow line ----
-        const horizGrad = ctx.createLinearGradient(0, horizonY - 2, 0, horizonY + 2);
-        horizGrad.addColorStop(0, 'transparent');
-        horizGrad.addColorStop(0.5, `rgba(139, 92, 246, ${0.15 + Math.sin(time * 3) * 0.05})`);
-        horizGrad.addColorStop(1, 'transparent');
-        ctx.fillStyle = horizGrad;
-        ctx.fillRect(0, horizonY - 2, W, 4);
-
-        // Wider horizon ambient
-        const horizAmbient = ctx.createRadialGradient(vpX, horizonY, 0, vpX, horizonY, W * 0.5);
-        horizAmbient.addColorStop(0, `rgba(139, 92, 246, ${0.06 + Math.sin(time * 2) * 0.02})`);
-        horizAmbient.addColorStop(1, 'transparent');
-        ctx.fillStyle = horizAmbient;
-        ctx.fillRect(0, horizonY - 80, W, 160);
+        // Subtle horizontal scan line (very faint)
+        const scanY = (time * 80) % H;
+        const scanGrad = ctx.createLinearGradient(0, scanY - 1, 0, scanY + 1);
+        scanGrad.addColorStop(0, 'transparent');
+        scanGrad.addColorStop(0.5, 'rgba(139, 92, 246, 0.04)');
+        scanGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = scanGrad;
+        ctx.fillRect(0, scanY - 1, W, 2);
 
         frameId = requestAnimationFrame(renderBackground);
     }
 
     renderBackground();
 
-    // ---- GSAP: Letters fly in from scattered positions ----
-    const allLetters = document.querySelectorAll('.intro-letter');
-    const line1Letters = line1.querySelectorAll('.intro-letter');
-    const line2Letters = line2.querySelectorAll('.intro-letter');
+    // ---- Digital Decode Logic ----
+    // Phase 1: Scramble all characters rapidly
+    let scrambleIntervals = [];
 
-    // Give each letter a UNIQUE random starting position from edges
-    allLetters.forEach((letter) => {
-        // Pick a random edge: 0=top, 1=right, 2=bottom, 3=left
-        const edge = Math.floor(Math.random() * 4);
-        let startX, startY;
-
-        switch (edge) {
-            case 0: // top
-                startX = (Math.random() - 0.5) * W * 1.5;
-                startY = -200 - Math.random() * 300;
-                break;
-            case 1: // right
-                startX = W + 200 + Math.random() * 300;
-                startY = (Math.random() - 0.5) * H * 1.5;
-                break;
-            case 2: // bottom
-                startX = (Math.random() - 0.5) * W * 1.5;
-                startY = H + 200 + Math.random() * 300;
-                break;
-            case 3: // left
-                startX = -200 - Math.random() * 300;
-                startY = (Math.random() - 0.5) * H * 1.5;
-                break;
-        }
-
-        gsap.set(letter, {
-            x: startX,
-            y: startY,
-            rotation: (Math.random() - 0.5) * 360,
-            rotateX: (Math.random() - 0.5) * 120,
-            rotateY: (Math.random() - 0.5) * 120,
-            scale: Math.random() * 0.5 + 0.3,
-            opacity: 0
-        });
+    allChars.forEach(span => {
+        span.classList.add('decoding');
+        const interval = setInterval(() => {
+            span.textContent = CHARS[Math.floor(Math.random() * CHARS.length)];
+        }, 50);
+        scrambleIntervals.push({ span, interval });
     });
 
-    const masterTL = gsap.timeline();
+    // Phase 2: Resolve letters one by one with delay
+    function resolveChar(span, interval, delay) {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                clearInterval(interval);
 
-    // Phase 1: Magnetic assembly — letters drift in slowly then rapidly accelerate into place
-    // Step A: Fade in + start drifting (slow, distant)
-    masterTL.to(allLetters, {
-        opacity: 0.6,
-        scale: 0.7,
-        duration: 0.5,
-        stagger: { each: 0.02, from: "random" },
-        ease: "power1.out"
-    })
-        // Step B: Magnetic pull — accelerate to final position (slow start, very fast end)
-        .to(line1Letters, {
-            x: 0,
-            y: 0,
-            rotation: 0,
-            rotateX: 0,
-            rotateY: 0,
-            scale: 1,
-            opacity: 1,
-            duration: 1.8,
-            stagger: {
-                each: 0.03,
-                from: "center"
-            },
-            ease: "power4.in"
-        }, "-=0.1")
-        .to(line2Letters, {
-            x: 0,
-            y: 0,
-            rotation: 0,
-            rotateX: 0,
-            rotateY: 0,
-            scale: 1,
-            opacity: 1,
-            duration: 1.5,
-            stagger: {
-                each: 0.025,
-                from: "center"
-            },
-            ease: "power4.in"
-        }, "-=1.3")
-        // Step C: Elastic snap settle (tiny overshoot for magnetic feel)
-        .from(line1Letters, {
-            scale: 0.92,
-            duration: 0.35,
-            stagger: 0.015,
-            ease: "elastic.out(1.5, 0.4)"
-        })
-        .from(line2Letters, {
-            scale: 0.92,
-            duration: 0.3,
-            stagger: 0.012,
-            ease: "elastic.out(1.5, 0.4)"
-        }, "<")
+                // Quick final scramble burst (faster)
+                let burstCount = 0;
+                const burst = setInterval(() => {
+                    span.textContent = CHARS[Math.floor(Math.random() * CHARS.length)];
+                    burstCount++;
+                    if (burstCount >= 6) {
+                        clearInterval(burst);
+                        // Lock in correct character
+                        span.textContent = span.dataset.target;
+                        span.classList.remove('decoding');
+                        span.classList.add('flash');
 
-        // Phase 2: Glow pulse
-        .to(line1Letters, {
-            textShadow: "0 0 25px rgba(139, 92, 246, 0.9), 0 0 50px rgba(139, 92, 246, 0.4), 0 0 100px rgba(139, 92, 246, 0.15)",
-            duration: 0.6,
+                        // Flash then settle to resolved
+                        setTimeout(() => {
+                            span.classList.remove('flash');
+                            span.classList.add('resolved');
+                        }, 150);
+
+                        resolve();
+                    }
+                }, 30);
+            }, delay);
+        });
+    }
+
+    // Resolve line 1 first, then line 2
+    const startDelay = 800; // Start resolving after initial scramble
+    const charDelay = 100; // Time between each char resolve
+
+    // Resolve "Arrakis"
+    chars1.forEach((span, i) => {
+        const { interval } = scrambleIntervals[i];
+        resolveChar(span, interval, startDelay + i * charDelay);
+    });
+
+    // Resolve "Technologies" (starts slightly before line 1 finishes)
+    const line2StartDelay = startDelay + chars1.length * charDelay - 200;
+    chars2.forEach((span, i) => {
+        const { interval } = scrambleIntervals[chars1.length + i];
+        resolveChar(span, interval, line2StartDelay + i * (charDelay * 0.7));
+    });
+
+    // Phase 3: After all resolved → glow pulse → reveal
+    const totalDuration = line2StartDelay + chars2.length * (charDelay * 0.7) + 400;
+
+    setTimeout(() => {
+        // Glow pulse on all resolved chars
+        gsap.to(allChars, {
+            textShadow: "0 0 30px rgba(139, 92, 246, 0.9), 0 0 60px rgba(139, 92, 246, 0.4), 0 0 100px rgba(139, 92, 246, 0.15)",
+            duration: 0.5,
             ease: "power2.inOut"
-        }, "+=0.15")
-        .to(line2Letters, {
-            textShadow: "0 0 15px rgba(139, 92, 246, 0.6), 0 0 30px rgba(139, 92, 246, 0.2)",
-            duration: 0.6,
-            ease: "power2.inOut"
-        }, "<")
+        });
 
-        // Phase 3: Glow softens
-        .to(allLetters, {
-            textShadow: "0 0 8px rgba(139, 92, 246, 0.2)",
+        // Settle glow
+        gsap.to(allChars, {
+            textShadow: "0 0 15px rgba(139, 92, 246, 0.4), 0 0 30px rgba(139, 92, 246, 0.15)",
             duration: 0.4,
+            delay: 0.5,
             ease: "power2.out"
-        })
+        });
 
-        // Phase 4: Brief hold
-        .to({}, { duration: 0.4 })
-
-        // Phase 5: Premium reveal — text scales toward camera and dissolves
-        .to(line1Letters, {
-            scale: 2.5,
-            opacity: 0,
-            y: -30,
-            filter: "blur(8px)",
-            duration: 0.9,
-            stagger: 0.015,
-            ease: "power3.in"
-        })
-        .to(line2Letters, {
-            scale: 2,
+        // Hold, then reveal
+        gsap.to(allChars, {
+            scale: 1.3,
             opacity: 0,
             filter: "blur(6px)",
-            duration: 0.7,
-            stagger: 0.015,
+            duration: 0.8,
+            delay: 1.2,
+            stagger: 0.01,
             ease: "power3.in"
-        }, "<+0.1")
-        .to(loader, {
+        });
+
+        gsap.to(loader, {
             opacity: 0,
-            duration: 0.7,
+            duration: 0.6,
+            delay: 1.8,
             ease: "power2.inOut",
             onComplete: () => {
                 cancelAnimationFrame(frameId);
@@ -643,12 +552,14 @@ function playIntroAtStart() {
                 }
                 ScrollTrigger.refresh();
             }
-        }, "-=0.3");
+        });
+    }, totalDuration);
 
     // Fail-safe
     setTimeout(() => {
         if (loader.style.display !== 'none') {
             cancelAnimationFrame(frameId);
+            scrambleIntervals.forEach(s => clearInterval(s.interval));
             loader.style.display = 'none';
             document.body.style.overflow = '';
             if (!heroAnimationsStarted) {

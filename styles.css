@@ -1264,7 +1264,7 @@ section {
 #loader {
     position: fixed;
     inset: 0;
-    background-color: #010008;
+    background-color: #020010;
     z-index: 9999;
     overflow: hidden;
 }
@@ -1280,43 +1280,51 @@ section {
 #loaderTextWrapper {
     position: absolute;
     inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
     z-index: 2;
     pointer-events: none;
 }
 
-#loaderLine1,
-#loaderLine2 {
-    position: absolute;
-    left: 50%;
+.decode-line {
     display: flex;
-    transform: translateX(-50%);
-    transform-style: preserve-3d;
+    gap: 0;
+    overflow: visible;
 }
 
-#loaderLine1 {
-    top: calc(50% - 5vw);
-}
-
-#loaderLine2 {
-    top: calc(50% + 4vw);
-}
-
-.intro-letter {
+.decode-char {
     font-family: 'Rounded Elegance', 'Outfit', sans-serif;
-    font-size: clamp(3.5rem, 8vw, 7.5rem);
+    font-size: clamp(3rem, 7vw, 6.5rem);
     font-weight: 400;
-    color: #fff;
-    letter-spacing: 0.12em;
+    color: rgba(139, 92, 246, 0.4);
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     display: inline-block;
-    position: relative;
-    opacity: 0;
-    transform-style: preserve-3d;
-    will-change: transform, opacity;
+    min-width: 0.6em;
+    text-align: center;
+    transition: color 0.15s ease, text-shadow 0.15s ease;
+    will-change: color, text-shadow;
 }
 
-#loaderLine2 .intro-letter {
-    font-size: clamp(1.2rem, 3vw, 2.8rem);
-    letter-spacing: 0.4em;
-    color: rgba(255, 255, 255, 0.65);
+.decode-char.decoding {
+    color: rgba(139, 92, 246, 0.6);
+    text-shadow: 0 0 8px rgba(139, 92, 246, 0.3);
+}
+
+.decode-char.resolved {
+    color: #fff;
+    text-shadow: 0 0 20px rgba(139, 92, 246, 0.6), 0 0 40px rgba(139, 92, 246, 0.2);
+}
+
+.decode-char.flash {
+    color: #fff;
+    text-shadow: 0 0 40px rgba(139, 92, 246, 1), 0 0 80px rgba(139, 92, 246, 0.5), 0 0 120px rgba(255, 255, 255, 0.3);
+}
+
+#loaderLine2 .decode-char {
+    font-size: clamp(1rem, 2.5vw, 2.2rem);
+    letter-spacing: 0.3em;
 }

@@ -372,7 +372,7 @@ function playIntroAtStart() {
 
     document.body.style.overflow = 'hidden';
 
-    // ---- Canvas: V9 High-Fidelity 3D Audio Terrain ----
+    // ---- Canvas: V9 High-Fidelity 3D Audio Terrain (Confirmed: User Likes This) ----
     var ctx = canvas.getContext('2d');
     var dpr = window.devicePixelRatio || 1;
     canvas.width = window.innerWidth * dpr;
@@ -383,56 +383,46 @@ function playIntroAtStart() {
     var time = 0;
     var frameId;
 
-    // 3D Config - Looking like a vast digital landscape
+    // 3D Config 
     var fov = 400;
     var cameraHeight = 120;
-    var horizonY = H * 0.4; // Horizon line height
+    var horizonY = H * 0.4;
 
     function render3DGrid() {
-        time += 0.02; // Faster movement
+        time += 0.02;
         ctx.clearRect(0, 0, W, H);
 
-        // Deepest black background
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, W, H);
 
-        var spacing = 40; // Tighter grid
+        var spacing = 40;
         var rows = 50;
         var cols = 80;
 
-        // Draw the Terrain from back (horizon) to front
         for (var r = rows; r > 0; r--) {
-            // Z depth: moving towards camera
             var z = (r * spacing) - ((time * 200) % spacing);
-            if (z < 10) continue; // Clip close
+            if (z < 10) continue;
 
             var scale = fov / (fov + z);
-            var alpha = Math.min(1, Math.pow(scale, 1.5) * 2); // Fade logic
+            var alpha = Math.min(1, Math.pow(scale, 1.5) * 2);
 
-            // Draw a horizontal line representing this row's wave
             ctx.beginPath();
-            ctx.lineWidth = 1 + scale * 2; // Lines get thicker closer
+            ctx.lineWidth = 1 + scale * 2;
 
-            // Gradient color based on depth
-            var hue = 260 - (r * 2); // Purple to Blue
+            var hue = 260 - (r * 2);
             ctx.strokeStyle = 'hsla(' + hue + ', 80%, 60%, ' + alpha + ')';
             ctx.shadowColor = 'hsla(' + hue + ', 80%, 60%, ' + alpha + ')';
             ctx.shadowBlur = 10 * scale;
 
             var started = false;
 
-            // Iterate columns to create the wave shape
             for (var c = -cols / 2; c <= cols / 2; c++) {
                 var xWorld = c * spacing;
 
-                // Complex Wave Function (The "Sound" part)
-                // Mix low freq and high freq
                 var waveY = Math.sin(c * 0.2 + time * 1.5) * 40 * Math.sin(r * 0.1 + time);
                 waveY += Math.cos(c * 0.5 - time * 3) * 15;
-                // Add noise/spike
                 waveY += Math.sin(c * 1.5 + time * 5) * 5;
 
-                // Project
                 var xScreen = (W / 2) + xWorld * scale;
                 var yScreen = (H / 2) + cameraHeight * scale + horizonY * 0.1 + (waveY * scale * 1.5);
 
@@ -444,10 +434,9 @@ function playIntroAtStart() {
                 }
             }
             ctx.stroke();
-            ctx.shadowBlur = 0; // Reset for performance
+            ctx.shadowBlur = 0;
         }
 
-        // Vertical lines for the grid effect (sparser)
         for (var c = -cols / 2; c <= cols / 2; c += 4) {
             ctx.beginPath();
             ctx.strokeStyle = 'rgba(139, 92, 246, 0.08)';
@@ -471,10 +460,9 @@ function playIntroAtStart() {
             ctx.stroke();
         }
 
-        // Vignette / Center Glow
         var grd = ctx.createRadialGradient(W / 2, H / 2 + 50, 0, W / 2, H / 2 + 50, H);
-        grd.addColorStop(0, 'rgba(60, 20, 120, 0.1)'); // Subtle purple center
-        grd.addColorStop(1, 'rgba(0,0,0,0.8)'); // Dark corners
+        grd.addColorStop(0, 'rgba(60, 20, 120, 0.1)');
+        grd.addColorStop(1, 'rgba(0,0,0,0.8)');
         ctx.fillStyle = grd;
         ctx.fillRect(0, 0, W, H);
 
@@ -502,120 +490,91 @@ function playIntroAtStart() {
     var chars2 = line2.querySelectorAll('.intro-char');
     var allChars = Array.from(chars1).concat(Array.from(chars2));
 
-    // ---- Magnetic "Thrown" Config ----
-    // To feel like a magnet:
-    // 1. Start far away (high distance).
-    // 2. Start slow, then ACCELERATE heavily (Ease In).
-    // 3. SLAM into position.
+    // ---- Cinematic "Drift" Config ----
+    // Elegant, slow, majestic reveal.
+    // Letters start:
+    // 1. Z-depth (behind camera or far away)
+    // 2. Blurred (Depth of Field simulation)
+    // 3. Transparent
+    // Animation: Smooth DRIFT into focus (Deceleration / Ease Out)
 
-    function setInitialMagneticState(chars) {
+    function setInitialDriftState(chars) {
         chars.forEach(function (ch) {
-            // Random start position from WAY off screen
-            var angle = Math.random() * Math.PI * 2;
-            var distance = 2000 + Math.random() * 1000; // Far away
-
             gsap.set(ch, {
-                x: Math.cos(angle) * distance,
-                y: Math.sin(angle) * distance,
-                color: "rgba(255,255,255,0)", // Start invisible
-                scale: 5, // Start HUGE
-                z: 1000, // CSS 3D Depth
-                textShadow: "0 0 0px transparent"
+                opacity: 0,
+                scale: 1.5, // Start slightly zoomed in
+                y: 40,      // Start slightly below
+                z: 200,     // Start closer to camera (css 3d)
+                filter: "blur(12px)", // Depth of field blur
+                color: "#ffffff"
             });
         });
     }
 
-    setInitialMagneticState(chars1);
-    setInitialMagneticState(chars2);
+    setInitialDriftState(chars1);
+    setInitialDriftState(chars2);
     gsap.set(content, { perspective: 1000 }); // Enable 3D transitions
 
     // ---- Master Timeline ----
     var tl = gsap.timeline();
 
     // Group 1: ARRAKIS
-    // Accelerate IN (expo.in is very sharp acceleration)
+    // Majestic, slow resolve
     tl.to(chars1, {
-        x: 0,
+        opacity: 1,
+        scale: 1,
         y: 0,
         z: 0,
-        scale: 1,
-        color: "#ffffff",
-        opacity: 1,
-        duration: 1.8, // Long duration for the build-up
+        filter: "blur(0px)",
+        duration: 2.4, // Very Cinematic Duration
         stagger: {
-            each: 0.1,
-            from: "random"
+            each: 0.08,
+            from: "center" // Reveal from center looks most premium
         },
-        ease: "expo.in" // THE MAGNET EFFECT: Slow start -> ZOOM -> CRASH
+        ease: "power3.out" // Strong deceleration: Fast start, extremely smooth stop
     }, 0.5);
 
-    // Impact Flash for Arrakis (simulating the collision)
-    tl.to(chars1, {
-        textShadow: "0 0 50px white, 0 0 20px cyan",
-        duration: 0.1,
-        ease: "power1.out"
-    }, ">-0.2") // Start slightly before movement ends
-        .to(chars1, {
-            textShadow: "0 0 0px transparent",
-            duration: 0.5,
-            ease: "power2.out"
-        });
-
-
     // Group 2: TECHNOLOGIES
-    // Same tracking magnet effect
+    // Follows slightly after
     tl.to(chars2, {
-        x: 0,
+        opacity: 1,
+        scale: 1,
         y: 0,
         z: 0,
-        scale: 1,
-        color: "#ffffff",
-        opacity: 1,
-        duration: 1.5,
+        filter: "blur(0px)",
+        duration: 2.2,
         stagger: {
-            each: 0.05,
-            from: "random"
+            each: 0.06,
+            from: "center"
         },
-        ease: "expo.in"
-    }, 1.5); // Overlap slightly
-
-    // Impact Flash for Tech
-    tl.to(chars2, {
-        textShadow: "0 0 30px white, 0 0 10px violet",
-        duration: 0.1,
-        ease: "power1.out"
-    }, ">-0.2")
-        .to(chars2, {
-            textShadow: "0 0 0px transparent",
-            duration: 0.5,
-            ease: "power2.out"
-        });
+        ease: "power3.out"
+    }, 1.2);
 
 
     // Phase 3: Hold and Admire
-    tl.to({}, { duration: 0.5 });
+    tl.to({}, { duration: 0.8 });
 
     // Phase 4: Elegant Reveal (Eyelid)
     tl.to(revealLine, {
         scaleX: 1,
-        duration: 0.6,
+        duration: 0.8, // Slower reveal line
         ease: "power4.inOut"
     });
 
     // Content fade out
     tl.to(content, {
         opacity: 0,
-        scale: 0.95,
-        duration: 0.4,
+        scale: 0.98, // Subtle scale
+        duration: 0.6,
         ease: "power2.in"
-    }, ">-0.2");
+    }, ">-0.3");
 
-    tl.to(canvas, { opacity: 0, duration: 0.4 }, "<");
+    tl.to(canvas, { opacity: 0, duration: 0.6 }, "<");
 
     // Split
-    tl.to(panelTop, { yPercent: -100, duration: 1.2, ease: "power4.inOut" }, "-=0.2");
-    tl.to(panelBottom, { yPercent: 100, duration: 1.2, ease: "power4.inOut" }, "<");
-    tl.to(revealLine, { opacity: 0, height: "100px", duration: 0.6, ease: "power2.in" }, "<"); // Flare out
+    tl.to(panelTop, { yPercent: -100, duration: 1.4, ease: "power4.inOut" }, "-=0.2");
+    tl.to(panelBottom, { yPercent: 100, duration: 1.4, ease: "power4.inOut" }, "<");
+    tl.to(revealLine, { opacity: 0, height: "120px", duration: 0.8, ease: "power2.in" }, "<"); // Flare out
 
     // Cleanup
     tl.call(function () {
@@ -644,7 +603,7 @@ function playIntroAtStart() {
             panelBottom.style.display = 'none';
             if (!heroAnimationsStarted) startHeroAnimations();
         }
-    }, 9000);
+    }, 11000); // 11s safety for slow cinematic intro
 }
 
 // Start Intro immediately

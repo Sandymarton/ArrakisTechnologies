@@ -531,7 +531,8 @@ function playIntroAtStart() {
             each: 0.08,
             from: "center" // Reveal from center looks most premium
         },
-        ease: "power3.out" // Strong deceleration: Fast start, extremely smooth stop
+        ease: "power3.out", // Strong deceleration: Fast start, extremely smooth stop
+        force3D: true // Force GPU acceleration for Safari
     }, 0.5);
 
     // Group 2: TECHNOLOGIES
@@ -547,7 +548,8 @@ function playIntroAtStart() {
             each: 0.06,
             from: "center"
         },
-        ease: "power3.out"
+        ease: "power3.out",
+        force3D: true // Force GPU acceleration for Safari
     }, 1.2);
 
 

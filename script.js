@@ -10,37 +10,36 @@ window.addEventListener('scroll', function () {
     }
 });
 
-// Hero animations
-gsap.from('.hero-content h1', {
-    duration: 1.2,
-    opacity: 0,
-    y: 50,
-    ease: 'power3.out'
-});
+// Hero animations (Wrapped in a function to start after intro)
+function startHeroAnimations() {
+    console.log("Starting Hero Animations");
+    const timeline = gsap.timeline();
 
-gsap.from('.hero-subtitle', {
-    duration: 1.2,
-    opacity: 0,
-    y: 40,
-    delay: 0.2,
-    ease: 'power3.out'
-});
-
-gsap.from('.cta-buttons', {
-    duration: 1.2,
-    opacity: 0,
-    y: 30,
-    delay: 0.4,
-    ease: 'power3.out'
-});
-
-gsap.from('.trust-bar', {
-    duration: 1.2,
-    opacity: 0,
-    y: 30,
-    delay: 0.6,
-    ease: 'power3.out'
-});
+    timeline.from('.hero-content h1', {
+        duration: 1.2,
+        opacity: 0,
+        y: 50,
+        ease: 'power3.out'
+    })
+        .from('.hero-subtitle', {
+            duration: 1.2,
+            opacity: 0,
+            y: 40,
+            ease: 'power3.out'
+        }, "-=0.8")
+        .from('.cta-buttons', {
+            duration: 1.2,
+            opacity: 0,
+            y: 30,
+            ease: 'power3.out'
+        }, "-=0.8")
+        .from('.trust-bar', {
+            duration: 1.2,
+            opacity: 0,
+            y: 30,
+            ease: 'power3.out'
+        }, "-=0.8");
+}
 
 // Function to apply scroll animations
 function applyScrollAnimations(selector, config = {}) {
@@ -342,3 +341,105 @@ if (calendarModal && closeCalendarBtn) {
         }
     });
 }
+
+// ==========================================
+// INTRO ANIMATION
+// ==========================================
+let heroAnimationsStarted = false;
+
+function playIntroAtStart() {
+    const loader = document.getElementById('loader');
+    if (!loader) return;
+
+    // Safety check: if GSAP isn't loaded, hide loader immediately
+    if (typeof gsap === 'undefined') {
+        console.error("GSAP not loaded");
+        loader.style.display = 'none';
+        if (!heroAnimationsStarted) {
+            startHeroAnimations();
+            heroAnimationsStarted = true;
+        }
+        return;
+    }
+
+    // Fail-safe: Force remove loader after 4 seconds max
+    setTimeout(() => {
+        if (loader.style.display !== 'none') {
+            console.warn("Intro animation timed out, forcing close");
+            gsap.to(loader, {
+                duration: 0.5,
+                opacity: 0,
+                onComplete: () => {
+                    loader.style.display = 'none';
+                    document.body.style.overflow = '';
+                    if (!heroAnimationsStarted) {
+                        startHeroAnimations();
+                        heroAnimationsStarted = true;
+                    }
+                }
+            });
+        }
+    }, 4000);
+
+    // Disable scrolling
+    document.body.style.overflow = 'hidden';
+
+    try {
+        const tl = gsap.timeline({
+            onComplete: () => {
+                // Re-enable scrolling
+                document.body.style.overflow = '';
+                loader.style.display = 'none';
+
+                if (!heroAnimationsStarted) {
+                    startHeroAnimations();
+                    heroAnimationsStarted = true;
+                }
+
+                // Refresh scroll triggers just in case
+                ScrollTrigger.refresh();
+            }
+        });
+
+        // 1. Reveal letters
+        tl.to('.letter', {
+            duration: 0.8,
+            opacity: 1,
+            y: 0,
+            rotateX: 0,
+            stagger: 0.05,
+            ease: "back.out(1.7)"
+        })
+            // 2. Add Glow
+            .to('.loader-text', {
+                duration: 0.5,
+                textShadow: "0 0 30px rgba(139, 92, 246, 0.8), 0 0 60px rgba(139, 92, 246, 0.4)",
+                color: "#fff",
+                ease: "power2.inOut"
+            })
+            .to('.loader-text', {
+                duration: 0.5,
+                textShadow: "0 0 10px rgba(139, 92, 246, 0.5)",
+                ease: "power2.inOut"
+            })
+            // 3. Hold for a moment
+            .to({}, { duration: 0.5 })
+            // 4. Fade out loader
+            .to('#loader', {
+                duration: 1,
+                opacity: 0,
+                ease: "power2.inOut"
+            });
+    } catch (e) {
+        console.error("Animation error:", e);
+        loader.style.display = 'none';
+        document.body.style.overflow = '';
+        if (!heroAnimationsStarted) {
+            startHeroAnimations();
+            heroAnimationsStarted = true;
+        }
+    }
+}
+
+// Start Intro immediately (DOM is ready since script is at bottom of body)
+playIntroAtStart();

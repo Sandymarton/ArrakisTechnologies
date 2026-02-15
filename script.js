@@ -343,7 +343,7 @@ if (calendarModal && closeCalendarBtn) {
 }
 
 // ==========================================
-// INTRO ANIMATION - DIGITAL DECODE
+// INTRO ANIMATION - 3D OBJECTS + GRAVITY
 // ==========================================
 let heroAnimationsStarted = false;
 
@@ -352,7 +352,8 @@ function playIntroAtStart() {
     const canvas = document.getElementById('loaderCanvas');
     const line1 = document.getElementById('loaderLine1');
     const line2 = document.getElementById('loaderLine2');
-    if (!loader || !canvas || !line1 || !line2) return;
+    const textWrapper = document.getElementById('loaderTextWrapper');
+    if (!loader || !canvas || !line1 || !line2 || !textWrapper) return;
 
     if (typeof gsap === 'undefined') {
         loader.style.display = 'none';
@@ -362,29 +363,21 @@ function playIntroAtStart() {
 
     document.body.style.overflow = 'hidden';
 
-    const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*';
-    const word1 = 'Arrakis';
-    const word2 = 'Technologies';
+    // ---- Create letter spans ----
+    'Arrakis'.split('').forEach(ch => {
+        const span = document.createElement('span');
+        span.className = 'intro-letter';
+        span.textContent = ch;
+        line1.appendChild(span);
+    });
+    'Technologies'.split('').forEach(ch => {
+        const span = document.createElement('span');
+        span.className = 'intro-letter';
+        span.textContent = ch;
+        line2.appendChild(span);
+    });
 
-    // ---- Create character spans ----
-    function createCharSpans(word, container) {
-        const spans = [];
-        word.split('').forEach(ch => {
-            const span = document.createElement('span');
-            span.className = 'decode-char';
-            span.dataset.target = ch.toUpperCase();
-            span.textContent = CHARS[Math.floor(Math.random() * CHARS.length)];
-            container.appendChild(span);
-            spans.push(span);
-        });
-        return spans;
-    }
-
-    const chars1 = createCharSpans(word1, line1);
-    const chars2 = createCharSpans(word2, line2);
-    const allChars = [...chars1, ...chars2];
-
-    // ---- Canvas: Animated dark gradient mesh ----
+    // ---- Canvas: Animated 3D wireframe objects ----
     const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
     canvas.width = window.innerWidth * dpr;
@@ -395,17 +388,66 @@ function playIntroAtStart() {
     let time = 0;
     let frameId;
 
-    // Ambient orbs
-    const orbs = [];
-    for (let i = 0; i < 6; i++) {
-        orbs.push({
-            x: W * (0.2 + Math.random() * 0.6),
-            y: H * (0.2 + Math.random() * 0.6),
+    // ---- 3D Shape definitions ----
+    function cubeVertices(s) {
+        return [[-s, -s, -s], [s, -s, -s], [s, s, -s], [-s, s, -s], [-s, -s, s], [s, -s, s], [s, s, s], [-s, s, s]];
+    }
+    const cubeEdges = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]];
+
+    function octaVertices(s) {
+        return [[s, 0, 0], [-s, 0, 0], [0, s, 0], [0, -s, 0], [0, 0, s], [0, 0, -s]];
+    }
+    const octaEdges = [[0, 2], [0, 3], [0, 4], [0, 5], [1, 2], [1, 3], [1, 4], [1, 5], [2, 4], [2, 5], [3, 4], [3, 5]];
+
+    function diamondVertices(s) {
+        return [[0, -s * 1.5, 0], [s, 0, -s], [-s, 0, -s], [-s, 0, s], [s, 0, s], [0, s * 1.5, 0]];
+    }
+    const diamondEdges = [[0, 1], [0, 2], [0, 3], [0, 4], [1, 2], [2, 3], [3, 4], [4, 1], [5, 1], [5, 2], [5, 3], [5, 4]];
+
+    // 3D projection
+    function project(x, y, z, cx, cy, fov) {
+        const scale = fov / (fov + z);
+        return { x: cx + x * scale, y: cy + y * scale, s: scale };
+    }
+
+    // Rotate point
+    function rotate(verts, ax, ay, az) {
+        return verts.map(([x, y, z]) => {
+            // Rotate X
+            let y1 = y * Math.cos(ax) - z * Math.sin(ax);
+            let z1 = y * Math.sin(ax) + z * Math.cos(ax);
+            // Rotate Y
+            let x1 = x * Math.cos(ay) + z1 * Math.sin(ay);
+            let z2 = -x * Math.sin(ay) + z1 * Math.cos(ay);
+            // Rotate Z
+            let x2 = x1 * Math.cos(az) - y1 * Math.sin(az);
+            let y2 = x1 * Math.sin(az) + y1 * Math.cos(az);
+            return [x2, y2, z2];
+        });
+    }
+
+    // Create 3D objects
+    const shapes = [];
+    const shapeTypes = ['cube', 'octa', 'diamond'];
+    for (let i = 0; i < 14; i++) {
+        const type = shapeTypes[i % 3];
+        const size = 20 + Math.random() * 40;
+        shapes.push({
+            type,
+            size,
+            x: (Math.random() - 0.5) * W * 1.2,
+            y: (Math.random() - 0.5) * H * 1.2,
+            z: Math.random() * 400 + 100,
+            rx: Math.random() * Math.PI * 2,
+            ry: Math.random() * Math.PI * 2,
+            rz: Math.random() * Math.PI * 2,
+            drx: (Math.random() - 0.5) * 0.015,
+            dry: (Math.random() - 0.5) * 0.015,
+            drz: (Math.random() - 0.5) * 0.01,
             vx: (Math.random() - 0.5) * 0.3,
             vy: (Math.random() - 0.5) * 0.3,
-            radius: 200 + Math.random() * 300,
-            hue: 260 + Math.random() * 20,
-            alpha: 0.04 + Math.random() * 0.03
+            hue: 250 + Math.random() * 30,
+            alpha: 0.15 + Math.random() * 0.25
         });
     }
 
@@ -413,134 +455,164 @@ function playIntroAtStart() {
         time += 0.005;
         ctx.clearRect(0, 0, W, H);
 
-        // Deep dark background
-        ctx.fillStyle = '#020010';
+        // Deep dark background with subtle gradient
+        const bgGrad = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.7);
+        bgGrad.addColorStop(0, '#08001a');
+        bgGrad.addColorStop(1, '#020010');
+        ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, W, H);
 
-        // Move and draw ambient orbs
-        orbs.forEach(o => {
-            o.x += o.vx;
-            o.y += o.vy;
-            if (o.x < 0 || o.x > W) o.vx *= -1;
-            if (o.y < 0 || o.y > H) o.vy *= -1;
+        // Draw each 3D shape
+        shapes.forEach(sh => {
+            // Update rotation
+            sh.rx += sh.drx;
+            sh.ry += sh.dry;
+            sh.rz += sh.drz;
 
-            const pulse = 1 + Math.sin(time * 2 + o.x * 0.01) * 0.15;
-            const grad = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.radius * pulse);
-            grad.addColorStop(0, `hsla(${o.hue}, 70%, 30%, ${o.alpha})`);
-            grad.addColorStop(0.5, `hsla(${o.hue}, 60%, 15%, ${o.alpha * 0.4})`);
-            grad.addColorStop(1, 'transparent');
-            ctx.fillStyle = grad;
-            ctx.fillRect(o.x - o.radius * pulse, o.y - o.radius * pulse, o.radius * 2 * pulse, o.radius * 2 * pulse);
+            // Gentle drift
+            sh.x += sh.vx;
+            sh.y += sh.vy;
+            if (sh.x < -W * 0.7 || sh.x > W * 0.7) sh.vx *= -1;
+            if (sh.y < -H * 0.7 || sh.y > H * 0.7) sh.vy *= -1;
+
+            // Get vertices and edges by type
+            let verts, edges;
+            if (sh.type === 'cube') {
+                verts = cubeVertices(sh.size);
+                edges = cubeEdges;
+            } else if (sh.type === 'octa') {
+                verts = octaVertices(sh.size);
+                edges = octaEdges;
+            } else {
+                verts = diamondVertices(sh.size);
+                edges = diamondEdges;
+            }
+
+            // Rotate
+            const rotated = rotate(verts, sh.rx, sh.ry, sh.rz);
+
+            // Project to 2D
+            const cx = W / 2 + sh.x;
+            const cy = H / 2 + sh.y;
+            const projected = rotated.map(([x, y, z]) => project(x, y, z + sh.z, cx, cy, 600));
+
+            // Draw edges with glow
+            const depthAlpha = Math.max(0.05, 1 - sh.z / 600) * sh.alpha;
+            ctx.strokeStyle = `hsla(${sh.hue}, 70%, 60%, ${depthAlpha})`;
+            ctx.lineWidth = Math.max(0.5, 1.5 * (1 - sh.z / 600));
+            ctx.shadowColor = `hsla(${sh.hue}, 80%, 50%, ${depthAlpha * 0.5})`;
+            ctx.shadowBlur = 8;
+
+            edges.forEach(([a, b]) => {
+                ctx.beginPath();
+                ctx.moveTo(projected[a].x, projected[a].y);
+                ctx.lineTo(projected[b].x, projected[b].y);
+                ctx.stroke();
+            });
+
+            // Draw vertices as dots
+            ctx.shadowBlur = 4;
+            projected.forEach(p => {
+                ctx.beginPath();
+                ctx.fillStyle = `hsla(${sh.hue}, 80%, 70%, ${depthAlpha * 0.8})`;
+                ctx.arc(p.x, p.y, Math.max(1, 2.5 * p.s), 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            ctx.shadowBlur = 0;
         });
-
-        // Subtle horizontal scan line (very faint)
-        const scanY = (time * 80) % H;
-        const scanGrad = ctx.createLinearGradient(0, scanY - 1, 0, scanY + 1);
-        scanGrad.addColorStop(0, 'transparent');
-        scanGrad.addColorStop(0.5, 'rgba(139, 92, 246, 0.04)');
-        scanGrad.addColorStop(1, 'transparent');
-        ctx.fillStyle = scanGrad;
-        ctx.fillRect(0, scanY - 1, W, 2);
 
         frameId = requestAnimationFrame(renderBackground);
     }
 
     renderBackground();
 
-    // ---- Digital Decode Logic ----
-    // Phase 1: Scramble all characters rapidly
-    let scrambleIntervals = [];
+    // ---- GSAP: Gravity drop letters ----
+    const line1Letters = line1.querySelectorAll('.intro-letter');
+    const line2Letters = line2.querySelectorAll('.intro-letter');
+    const allLetters = document.querySelectorAll('.intro-letter');
 
-    allChars.forEach(span => {
-        span.classList.add('decoding');
-        const interval = setInterval(() => {
-            span.textContent = CHARS[Math.floor(Math.random() * CHARS.length)];
-        }, 50);
-        scrambleIntervals.push({ span, interval });
-    });
-
-    // Phase 2: Resolve letters one by one with delay
-    function resolveChar(span, interval, delay) {
-        return new Promise(resolve => {
-            setTimeout(() => {
-                clearInterval(interval);
-
-                // Quick final scramble burst (faster)
-                let burstCount = 0;
-                const burst = setInterval(() => {
-                    span.textContent = CHARS[Math.floor(Math.random() * CHARS.length)];
-                    burstCount++;
-                    if (burstCount >= 6) {
-                        clearInterval(burst);
-                        // Lock in correct character
-                        span.textContent = span.dataset.target;
-                        span.classList.remove('decoding');
-                        span.classList.add('flash');
-
-                        // Flash then settle to resolved
-                        setTimeout(() => {
-                            span.classList.remove('flash');
-                            span.classList.add('resolved');
-                        }, 150);
-
-                        resolve();
-                    }
-                }, 30);
-            }, delay);
+    // Set each letter to a random position ABOVE the viewport
+    line1Letters.forEach(letter => {
+        gsap.set(letter, {
+            y: -(300 + Math.random() * 500),
+            x: (Math.random() - 0.5) * 100,
+            rotation: (Math.random() - 0.5) * 40,
+            opacity: 0
         });
-    }
-
-    // Resolve line 1 first, then line 2
-    const startDelay = 800; // Start resolving after initial scramble
-    const charDelay = 100; // Time between each char resolve
-
-    // Resolve "Arrakis"
-    chars1.forEach((span, i) => {
-        const { interval } = scrambleIntervals[i];
-        resolveChar(span, interval, startDelay + i * charDelay);
     });
 
-    // Resolve "Technologies" (starts slightly before line 1 finishes)
-    const line2StartDelay = startDelay + chars1.length * charDelay - 200;
-    chars2.forEach((span, i) => {
-        const { interval } = scrambleIntervals[chars1.length + i];
-        resolveChar(span, interval, line2StartDelay + i * (charDelay * 0.7));
+    line2Letters.forEach(letter => {
+        gsap.set(letter, {
+            y: -(250 + Math.random() * 400),
+            x: (Math.random() - 0.5) * 60,
+            rotation: (Math.random() - 0.5) * 30,
+            opacity: 0
+        });
     });
 
-    // Phase 3: After all resolved → glow pulse → reveal
-    const totalDuration = line2StartDelay + chars2.length * (charDelay * 0.7) + 400;
+    const masterTL = gsap.timeline();
 
-    setTimeout(() => {
-        // Glow pulse on all resolved chars
-        gsap.to(allChars, {
-            textShadow: "0 0 30px rgba(139, 92, 246, 0.9), 0 0 60px rgba(139, 92, 246, 0.4), 0 0 100px rgba(139, 92, 246, 0.15)",
-            duration: 0.5,
+    // Phase 1: Letters fall with gravity (bounce on landing)
+    masterTL.to(line1Letters, {
+        y: 0,
+        x: 0,
+        rotation: 0,
+        opacity: 1,
+        duration: 1.2,
+        stagger: {
+            each: 0.07,
+            from: "center"
+        },
+        ease: "bounce.out"
+    })
+        .to(line2Letters, {
+            y: 0,
+            x: 0,
+            rotation: 0,
+            opacity: 1,
+            duration: 1.0,
+            stagger: {
+                each: 0.05,
+                from: "center"
+            },
+            ease: "bounce.out"
+        }, "-=0.6")
+
+        // Phase 2: Glow pulse once assembled
+        .to(line1Letters, {
+            textShadow: "0 0 30px rgba(139, 92, 246, 1), 0 0 60px rgba(139, 92, 246, 0.5), 0 0 100px rgba(139, 92, 246, 0.2)",
+            color: "#fff",
+            duration: 0.6,
             ease: "power2.inOut"
-        });
+        }, "+=0.1")
+        .to(line2Letters, {
+            textShadow: "0 0 20px rgba(139, 92, 246, 0.8), 0 0 40px rgba(139, 92, 246, 0.3)",
+            color: "rgba(255, 255, 255, 0.85)",
+            duration: 0.6,
+            ease: "power2.inOut"
+        }, "<")
 
-        // Settle glow
-        gsap.to(allChars, {
-            textShadow: "0 0 15px rgba(139, 92, 246, 0.4), 0 0 30px rgba(139, 92, 246, 0.15)",
+        // Phase 3: Glow settles
+        .to(allLetters, {
+            textShadow: "0 0 12px rgba(139, 92, 246, 0.3)",
             duration: 0.4,
-            delay: 0.5,
             ease: "power2.out"
-        });
+        })
 
-        // Hold, then reveal
-        gsap.to(allChars, {
-            scale: 1.3,
+        // Phase 4: Hold
+        .to({}, { duration: 0.5 })
+
+        // Phase 5: ZOOM OUT reveal — text + wrapper scales down, fades
+        .to(textWrapper, {
+            scale: 0.4,
             opacity: 0,
-            filter: "blur(6px)",
-            duration: 0.8,
-            delay: 1.2,
-            stagger: 0.01,
-            ease: "power3.in"
-        });
-
-        gsap.to(loader, {
+            duration: 1.2,
+            ease: "power3.inOut"
+        })
+        .to(loader, {
             opacity: 0,
             duration: 0.6,
-            delay: 1.8,
             ease: "power2.inOut",
             onComplete: () => {
                 cancelAnimationFrame(frameId);
@@ -552,14 +624,12 @@ function playIntroAtStart() {
                 }
                 ScrollTrigger.refresh();
             }
-        });
-    }, totalDuration);
+        }, "-=0.4");
 
     // Fail-safe
     setTimeout(() => {
         if (loader.style.display !== 'none') {
             cancelAnimationFrame(frameId);
-            scrambleIntervals.forEach(s => clearInterval(s.interval));
             loader.style.display = 'none';
             document.body.style.overflow = '';
             if (!heroAnimationsStarted) {
@@ -572,3 +642,4 @@ function playIntroAtStart() {
 
 // Start Intro immediately
 playIntroAtStart();
+

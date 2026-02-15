@@ -1284,47 +1284,32 @@ section {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     z-index: 2;
     pointer-events: none;
+    transform-origin: center center;
 }
 
-.decode-line {
+.intro-line {
     display: flex;
     gap: 0;
     overflow: visible;
 }
 
-.decode-char {
+.intro-letter {
     font-family: 'Rounded Elegance', 'Outfit', sans-serif;
     font-size: clamp(3rem, 7vw, 6.5rem);
     font-weight: 400;
-    color: rgba(139, 92, 246, 0.4);
-    letter-spacing: 0.08em;
+    color: #fff;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     display: inline-block;
-    min-width: 0.6em;
-    text-align: center;
-    transition: color 0.15s ease, text-shadow 0.15s ease;
-    will-change: color, text-shadow;
+    opacity: 0;
+    will-change: transform, opacity;
 }
 
-.decode-char.decoding {
-    color: rgba(139, 92, 246, 0.6);
-    text-shadow: 0 0 8px rgba(139, 92, 246, 0.3);
-}
-
-.decode-char.resolved {
-    color: #fff;
-    text-shadow: 0 0 20px rgba(139, 92, 246, 0.6), 0 0 40px rgba(139, 92, 246, 0.2);
-}
-
-.decode-char.flash {
-    color: #fff;
-    text-shadow: 0 0 40px rgba(139, 92, 246, 1), 0 0 80px rgba(139, 92, 246, 0.5), 0 0 120px rgba(255, 255, 255, 0.3);
-}
-
-#loaderLine2 .decode-char {
-    font-size: clamp(1rem, 2.5vw, 2.2rem);
-    letter-spacing: 0.3em;
+#loaderLine2 .intro-letter {
+    font-size: clamp(1.1rem, 2.5vw, 2.2rem);
+    letter-spacing: 0.35em;
+    color: rgba(255, 255, 255, 0.6);
 }

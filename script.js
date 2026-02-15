@@ -343,16 +343,17 @@ if (calendarModal && closeCalendarBtn) {
 }
 
 // ==========================================
-// INTRO ANIMATION - PARTICLE TEXT ASSEMBLY
+// INTRO ANIMATION - TECH PERSPECTIVE
 // ==========================================
 let heroAnimationsStarted = false;
 
 function playIntroAtStart() {
     const loader = document.getElementById('loader');
     const canvas = document.getElementById('loaderCanvas');
-    if (!loader || !canvas) return;
+    const line1 = document.getElementById('loaderLine1');
+    const line2 = document.getElementById('loaderLine2');
+    if (!loader || !canvas || !line1 || !line2) return;
 
-    // Safety check
     if (typeof gsap === 'undefined') {
         loader.style.display = 'none';
         startHeroAnimations();
@@ -361,219 +362,249 @@ function playIntroAtStart() {
 
     document.body.style.overflow = 'hidden';
 
+    // ---- Create letter spans ----
+    const text1 = 'Arrakis';
+    const text2 = 'Technologies';
+
+    text1.split('').forEach(ch => {
+        const span = document.createElement('span');
+        span.className = 'intro-letter';
+        span.textContent = ch;
+        line1.appendChild(span);
+    });
+
+    text2.split('').forEach(ch => {
+        const span = document.createElement('span');
+        span.className = 'intro-letter';
+        span.textContent = ch;
+        line2.appendChild(span);
+    });
+
+    // ---- Canvas: Animated tech grid background ----
     const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
-
-    // Set canvas size
     canvas.width = window.innerWidth * dpr;
     canvas.height = window.innerHeight * dpr;
     ctx.scale(dpr, dpr);
-
     const W = window.innerWidth;
     const H = window.innerHeight;
 
-    // ---- Get text pixel data ----
-    const fontSize = Math.min(W * 0.06, 60);
-    const offscreen = document.createElement('canvas');
-    offscreen.width = W;
-    offscreen.height = H;
-    const offCtx = offscreen.getContext('2d');
+    // Grid config
+    const gridSpacing = 60;
+    const cols = Math.ceil(W / gridSpacing) + 2;
+    const rows = Math.ceil(H / gridSpacing) + 2;
+    let time = 0;
+    let frameId;
 
-    // Draw "ARRAKIS" on first line, "TECHNOLOGIES" on second
-    offCtx.fillStyle = '#fff';
-    offCtx.font = `900 ${fontSize}px Inter, sans-serif`;
-    offCtx.textAlign = 'center';
-    offCtx.textBaseline = 'middle';
-    offCtx.fillText('ARRAKIS', W / 2, H / 2 - fontSize * 0.7);
-    offCtx.fillText('TECHNOLOGIES', W / 2, H / 2 + fontSize * 0.7);
-
-    // Sample pixels
-    const imageData = offCtx.getImageData(0, 0, W, H);
-    const pixels = imageData.data;
-    const gap = 4; // Sample every 4 pixels for density
-    const targets = [];
-
-    for (let y = 0; y < H; y += gap) {
-        for (let x = 0; x < W; x += gap) {
-            const i = (y * W + x) * 4;
-            if (pixels[i + 3] > 128) { // Alpha > 128
-                targets.push({ x, y });
-            }
-        }
-    }
-
-    // ---- Create particles ----
-    const particles = targets.map(t => {
-        // Random start position (scattered)
-        const angle = Math.random() * Math.PI * 2;
-        const dist = Math.random() * Math.max(W, H) * 0.8 + 200;
-        return {
-            // Current position (start scattered)
-            x: W / 2 + Math.cos(angle) * dist,
-            y: H / 2 + Math.sin(angle) * dist,
-            // Target position (text)
-            tx: t.x,
-            ty: t.y,
-            // Visual properties
-            size: Math.random() * 2.5 + 0.5,
-            alpha: 0,
-            // Color: mix of brand purple and accent orange
-            hue: Math.random() > 0.7 ? 20 + Math.random() * 20 : 260 + Math.random() * 20,
-            sat: 80 + Math.random() * 20,
-            // Physics
-            vx: 0,
-            vy: 0,
-            // State
-            assembled: false,
-            explodeAngle: Math.random() * Math.PI * 2,
-            explodeSpeed: Math.random() * 8 + 3
-        };
-    });
-
-    // ---- Background stars ----
-    const stars = [];
-    for (let i = 0; i < 150; i++) {
-        stars.push({
+    // Flowing gradient nodes (intersection highlights)
+    const nodes = [];
+    for (let i = 0; i < 12; i++) {
+        nodes.push({
             x: Math.random() * W,
             y: Math.random() * H,
-            size: Math.random() * 1.5 + 0.3,
-            alpha: Math.random() * 0.6 + 0.1,
-            twinkleSpeed: Math.random() * 0.02 + 0.005
+            vx: (Math.random() - 0.5) * 0.8,
+            vy: (Math.random() - 0.5) * 0.8,
+            radius: 150 + Math.random() * 200,
+            hue: Math.random() > 0.5 ? 265 : 25, // purple or orange
+            alpha: 0.08 + Math.random() * 0.06
         });
     }
 
-    // ---- Animation state ----
-    let phase = 'converge'; // converge -> hold -> explode -> fadeout
-    let frameId;
-    let time = 0;
-    let holdTimer = 0;
-    let explodeTimer = 0;
-    let globalAlpha = 1;
-
-    // GSAP: Animate particles to their target positions
-    particles.forEach((p, i) => {
-        const delay = Math.random() * 0.8;
-        gsap.to(p, {
-            x: p.tx,
-            y: p.ty,
-            alpha: 1,
-            duration: 1.5 + Math.random() * 0.5,
-            delay: delay,
-            ease: "power3.inOut",
-            onComplete: () => { p.assembled = true; }
-        });
-    });
-
-    // After convergence, trigger hold then explode
-    gsap.delayedCall(2.8, () => {
-        phase = 'hold';
-        gsap.delayedCall(0.8, () => {
-            phase = 'explode';
-            // Explode particles outward
-            particles.forEach((p) => {
-                gsap.to(p, {
-                    x: p.x + Math.cos(p.explodeAngle) * p.explodeSpeed * 80,
-                    y: p.y + Math.sin(p.explodeAngle) * p.explodeSpeed * 80,
-                    alpha: 0,
-                    size: 0,
-                    duration: 1.2,
-                    ease: "power2.in"
-                });
-            });
-            gsap.delayedCall(0.6, () => {
-                phase = 'fadeout';
-                gsap.to({ val: 1 }, {
-                    val: 0,
-                    duration: 0.8,
-                    ease: "power2.inOut",
-                    onUpdate: function () { globalAlpha = this.targets()[0].val; },
-                    onComplete: () => {
-                        cancelAnimationFrame(frameId);
-                        loader.style.display = 'none';
-                        document.body.style.overflow = '';
-                        if (!heroAnimationsStarted) {
-                            startHeroAnimations();
-                            heroAnimationsStarted = true;
-                        }
-                        ScrollTrigger.refresh();
-                    }
-                });
-            });
-        });
-    });
-
-    // ---- Render loop ----
-    function render() {
-        time += 0.016;
-        ctx.globalAlpha = globalAlpha;
+    function renderGrid() {
+        time += 0.008;
         ctx.clearRect(0, 0, W, H);
 
-        // Draw background
-        ctx.fillStyle = '#000';
+        // Dark gradient background
+        const bgGrad = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.7);
+        bgGrad.addColorStop(0, '#0a0520');
+        bgGrad.addColorStop(1, '#030014');
+        ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, W, H);
 
-        // Draw stars with twinkle
-        stars.forEach(s => {
-            const flicker = Math.sin(time * s.twinkleSpeed * 60) * 0.3 + 0.7;
-            ctx.beginPath();
-            ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha * flicker})`;
-            ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-            ctx.fill();
+        // Move nodes
+        nodes.forEach(n => {
+            n.x += n.vx;
+            n.y += n.vy;
+            if (n.x < -100 || n.x > W + 100) n.vx *= -1;
+            if (n.y < -100 || n.y > H + 100) n.vy *= -1;
         });
 
-        // Draw particles
-        particles.forEach(p => {
-            if (p.alpha <= 0) return;
-            ctx.beginPath();
-
-            // Glow effect during hold phase
-            let glowSize = p.size;
-            let glowAlpha = p.alpha;
-            if (phase === 'hold') {
-                const pulse = Math.sin(time * 8) * 0.3 + 0.7;
-                glowSize = p.size * (1 + pulse * 0.5);
-                glowAlpha = p.alpha * (0.8 + pulse * 0.2);
-            }
-
-            // Outer glow
-            const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowSize * 4);
-            gradient.addColorStop(0, `hsla(${p.hue}, ${p.sat}%, 70%, ${glowAlpha * 0.8})`);
-            gradient.addColorStop(0.4, `hsla(${p.hue}, ${p.sat}%, 50%, ${glowAlpha * 0.3})`);
-            gradient.addColorStop(1, `hsla(${p.hue}, ${p.sat}%, 50%, 0)`);
-            ctx.fillStyle = gradient;
-            ctx.arc(p.x, p.y, glowSize * 4, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Core
-            ctx.beginPath();
-            ctx.fillStyle = `hsla(${p.hue}, ${p.sat}%, 85%, ${glowAlpha})`;
-            ctx.arc(p.x, p.y, glowSize, 0, Math.PI * 2);
-            ctx.fill();
+        // Draw node glows (ambient light)
+        nodes.forEach(n => {
+            const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.radius);
+            grad.addColorStop(0, `hsla(${n.hue}, 80%, 50%, ${n.alpha})`);
+            grad.addColorStop(1, 'transparent');
+            ctx.fillStyle = grad;
+            ctx.fillRect(n.x - n.radius, n.y - n.radius, n.radius * 2, n.radius * 2);
         });
 
-        // Connecting lines during hold (subtle web effect)
-        if (phase === 'hold') {
-            ctx.strokeStyle = 'rgba(139, 92, 246, 0.03)';
+        // Draw grid lines
+        const offsetX = (time * 30) % gridSpacing;
+        const offsetY = (time * 20) % gridSpacing;
+
+        // Vertical lines
+        for (let i = -1; i < cols; i++) {
+            const x = i * gridSpacing + offsetX;
+            // Find proximity to nearest node for brightness
+            let brightness = 0.04;
+            nodes.forEach(n => {
+                const dist = Math.abs(n.x - x);
+                if (dist < n.radius) {
+                    brightness = Math.max(brightness, 0.12 * (1 - dist / n.radius));
+                }
+            });
+            ctx.strokeStyle = `rgba(139, 92, 246, ${brightness})`;
             ctx.lineWidth = 0.5;
-            for (let i = 0; i < particles.length; i += 8) {
-                for (let j = i + 8; j < particles.length; j += 8) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance < 30) {
-                        ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, H);
+            ctx.stroke();
+        }
+
+        // Horizontal lines
+        for (let j = -1; j < rows; j++) {
+            const y = j * gridSpacing + offsetY;
+            let brightness = 0.04;
+            nodes.forEach(n => {
+                const dist = Math.abs(n.y - y);
+                if (dist < n.radius) {
+                    brightness = Math.max(brightness, 0.12 * (1 - dist / n.radius));
+                }
+            });
+            ctx.strokeStyle = `rgba(139, 92, 246, ${brightness})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(W, y);
+            ctx.stroke();
+        }
+
+        // Intersection dots (where grid lines cross near nodes)
+        for (let i = -1; i < cols; i++) {
+            for (let j = -1; j < rows; j++) {
+                const x = i * gridSpacing + offsetX;
+                const y = j * gridSpacing + offsetY;
+                let maxBright = 0;
+                nodes.forEach(n => {
+                    const dist = Math.sqrt((n.x - x) ** 2 + (n.y - y) ** 2);
+                    if (dist < n.radius * 0.6) {
+                        maxBright = Math.max(maxBright, 0.5 * (1 - dist / (n.radius * 0.6)));
                     }
+                });
+                if (maxBright > 0.05) {
+                    ctx.beginPath();
+                    ctx.fillStyle = `rgba(139, 92, 246, ${maxBright})`;
+                    ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+                    ctx.fill();
                 }
             }
         }
 
-        frameId = requestAnimationFrame(render);
+        frameId = requestAnimationFrame(renderGrid);
     }
 
-    render();
+    renderGrid();
+
+    // ---- GSAP: Perspective text entrance ----
+    const allLetters = document.querySelectorAll('.intro-letter');
+    const line1Letters = line1.querySelectorAll('.intro-letter');
+    const line2Letters = line2.querySelectorAll('.intro-letter');
+
+    // Set initial state: letters far away in Z, rotated, invisible
+    gsap.set(line1Letters, {
+        opacity: 0,
+        z: -2000,
+        rotateY: 90,
+        rotateX: -40,
+        scale: 0.3
+    });
+    gsap.set(line2Letters, {
+        opacity: 0,
+        z: -2000,
+        rotateY: -90,
+        rotateX: 40,
+        scale: 0.3
+    });
+
+    const masterTL = gsap.timeline();
+
+    // Phase 1: Letters fly in from deep perspective
+    masterTL.to(line1Letters, {
+        opacity: 1,
+        z: 0,
+        rotateY: 0,
+        rotateX: 0,
+        scale: 1,
+        duration: 1.4,
+        stagger: 0.06,
+        ease: "expo.out"
+    })
+        .to(line2Letters, {
+            opacity: 1,
+            z: 0,
+            rotateY: 0,
+            rotateX: 0,
+            scale: 1,
+            duration: 1.2,
+            stagger: 0.04,
+            ease: "expo.out"
+        }, "-=0.8")
+
+        // Phase 2: Subtle glow pulse on assembled text
+        .to(line1Letters, {
+            textShadow: "0 0 30px rgba(139, 92, 246, 0.9), 0 0 60px rgba(139, 92, 246, 0.4)",
+            duration: 0.6,
+            ease: "power2.inOut"
+        }, "+=0.2")
+        .to(line2Letters, {
+            textShadow: "0 0 20px rgba(255, 107, 53, 0.7), 0 0 40px rgba(255, 107, 53, 0.3)",
+            duration: 0.6,
+            ease: "power2.inOut"
+        }, "<")
+
+        // Phase 3: Glow settles
+        .to(allLetters, {
+            textShadow: "0 0 10px rgba(139, 92, 246, 0.3)",
+            duration: 0.5,
+            ease: "power2.out"
+        })
+
+        // Phase 4: Hold
+        .to({}, { duration: 0.3 })
+
+        // Phase 5: Premium reveal - text scales up and fades, loader wipes away
+        .to(line1Letters, {
+            z: 500,
+            opacity: 0,
+            scale: 1.5,
+            rotateX: -15,
+            duration: 0.8,
+            stagger: 0.02,
+            ease: "power3.in"
+        })
+        .to(line2Letters, {
+            z: 500,
+            opacity: 0,
+            scale: 1.3,
+            duration: 0.6,
+            stagger: 0.02,
+            ease: "power3.in"
+        }, "<")
+        .to(loader, {
+            opacity: 0,
+            duration: 0.8,
+            ease: "power2.inOut",
+            onComplete: () => {
+                cancelAnimationFrame(frameId);
+                loader.style.display = 'none';
+                document.body.style.overflow = '';
+                if (!heroAnimationsStarted) {
+                    startHeroAnimations();
+                    heroAnimationsStarted = true;
+                }
+                ScrollTrigger.refresh();
+            }
+        }, "-=0.4");
 
     // Fail-safe
     setTimeout(() => {
@@ -586,7 +617,7 @@ function playIntroAtStart() {
                 heroAnimationsStarted = true;
             }
         }
-    }, 7000);
+    }, 8000);
 }
 
 // Start Intro immediately

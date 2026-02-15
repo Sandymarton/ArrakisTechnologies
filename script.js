@@ -372,7 +372,7 @@ function playIntroAtStart() {
 
     document.body.style.overflow = 'hidden';
 
-    // ---- Canvas: True 3D Grid Terrain (Retro-Futuristic/Premium) ----
+    // ---- Canvas: V9 High-Fidelity 3D Audio Terrain ----
     var ctx = canvas.getContext('2d');
     var dpr = window.devicePixelRatio || 1;
     canvas.width = window.innerWidth * dpr;
@@ -383,90 +383,98 @@ function playIntroAtStart() {
     var time = 0;
     var frameId;
 
-    // 3D Perspective Config
-    var fov = 600;
-    var cameraHeight = 150; // Camera height above the grid
-    var gridSpeed = 2; // Speed of movement towards camera
+    // 3D Config - Looking like a vast digital landscape
+    var fov = 400;
+    var cameraHeight = 120;
+    var horizonY = H * 0.4; // Horizon line height
 
     function render3DGrid() {
-        time += 0.01;
+        time += 0.02; // Faster movement
         ctx.clearRect(0, 0, W, H);
 
-        // Deep premium black background
+        // Deepest black background
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, W, H);
 
-        // Grid parameters
-        var spacing = 60;
-        var cols = Math.ceil(W / spacing) * 2;
-        var rows = 40;
-        var centerX = W / 2;
-        var centerY = H / 2;
+        var spacing = 40; // Tighter grid
+        var rows = 50;
+        var cols = 80;
 
-        ctx.lineWidth = 1;
+        // Draw the Terrain from back (horizon) to front
+        for (var r = rows; r > 0; r--) {
+            // Z depth: moving towards camera
+            var z = (r * spacing) - ((time * 200) % spacing);
+            if (z < 10) continue; // Clip close
 
-        // We draw two planes: Floor and Ceiling (optional, here just floor creates vastness)
-        // Let's draw a 'Landscape' of sound waves
+            var scale = fov / (fov + z);
+            var alpha = Math.min(1, Math.pow(scale, 1.5) * 2); // Fade logic
 
-        for (var r = 0; r < rows; r++) {
-            // Z depth calculation
-            // z moves from far (rows * spacing) to near (0)
-            // Add time to z to make it move
-            var zBase = (r * spacing) - ((time * 100) % spacing);
-            // Ensure z is always positive for projection
-            if (zBase < 1) zBase += rows * spacing;
-
-            // Perspective scale
-            var scale = fov / (fov + zBase);
-            var alpha = Math.min(1, scale * 1.5); // Fade out as it gets closer/further logic can be tuned
-            // Fade distant lines
-            alpha *= Math.max(0, (1 - zBase / (rows * spacing)));
-
-            // Wave height variation based on time and audio-feel
-            var waveY = Math.sin(r * 0.5 + time * 3) * 20 * scale;
-
-            // Draw Horizontal Line at this Z depth
-            var yScreen = centerY + (cameraHeight * scale) + waveY;
-
+            // Draw a horizontal line representing this row's wave
             ctx.beginPath();
-            ctx.strokeStyle = 'rgba(139, 92, 246, ' + (alpha * 0.5) + ')';
-            ctx.moveTo(0, yScreen);
-            ctx.lineTo(W, yScreen);
+            ctx.lineWidth = 1 + scale * 2; // Lines get thicker closer
+
+            // Gradient color based on depth
+            var hue = 260 - (r * 2); // Purple to Blue
+            ctx.strokeStyle = 'hsla(' + hue + ', 80%, 60%, ' + alpha + ')';
+            ctx.shadowColor = 'hsla(' + hue + ', 80%, 60%, ' + alpha + ')';
+            ctx.shadowBlur = 10 * scale;
+
+            var started = false;
+
+            // Iterate columns to create the wave shape
+            for (var c = -cols / 2; c <= cols / 2; c++) {
+                var xWorld = c * spacing;
+
+                // Complex Wave Function (The "Sound" part)
+                // Mix low freq and high freq
+                var waveY = Math.sin(c * 0.2 + time * 1.5) * 40 * Math.sin(r * 0.1 + time);
+                waveY += Math.cos(c * 0.5 - time * 3) * 15;
+                // Add noise/spike
+                waveY += Math.sin(c * 1.5 + time * 5) * 5;
+
+                // Project
+                var xScreen = (W / 2) + xWorld * scale;
+                var yScreen = (H / 2) + cameraHeight * scale + horizonY * 0.1 + (waveY * scale * 1.5);
+
+                if (!started) {
+                    ctx.moveTo(xScreen, yScreen);
+                    started = true;
+                } else {
+                    ctx.lineTo(xScreen, yScreen);
+                }
+            }
+            ctx.stroke();
+            ctx.shadowBlur = 0; // Reset for performance
+        }
+
+        // Vertical lines for the grid effect (sparser)
+        for (var c = -cols / 2; c <= cols / 2; c += 4) {
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(139, 92, 246, 0.08)';
+            ctx.lineWidth = 1;
+
+            var startedV = false;
+            for (var r = 0; r < rows; r += 2) {
+                var z = (r * spacing) - ((time * 200) % spacing);
+                if (z < 10) continue;
+                var scale = fov / (fov + z);
+
+                var xWorld = c * spacing;
+                var waveY = Math.sin(c * 0.2 + time * 1.5) * 40 * Math.sin(r * 0.1 + time) + Math.cos(c * 0.5 - time * 3) * 15;
+
+                var xScreen = (W / 2) + xWorld * scale;
+                var yScreen = (H / 2) + cameraHeight * scale + horizonY * 0.1 + (waveY * scale * 1.5);
+
+                if (!startedV) { ctx.moveTo(xScreen, yScreen); startedV = true; }
+                else { ctx.lineTo(xScreen, yScreen); }
+            }
             ctx.stroke();
         }
 
-        // Draw Vertical Lines (Perspective)
-        for (var c = -cols / 2; c < cols / 2; c++) {
-            var xWorld = c * spacing;
-
-            ctx.beginPath();
-            ctx.strokeStyle = 'rgba(139, 92, 246, 0.15)';
-
-            // Draw segment by segment to curve slightly? No, straight lines for elegant grid
-            // Just projection:
-            // Point 1 (Close)
-            var z1 = 10;
-            var scale1 = fov / (fov + z1);
-            var x1 = centerX + xWorld * scale1;
-            var y1 = centerY + cameraHeight * scale1;
-
-            // Point 2 (Far)
-            var z2 = rows * spacing;
-            var scale2 = fov / (fov + z2);
-            var x2 = centerX + xWorld * scale2;
-            var y2 = centerY + cameraHeight * scale2;
-
-            if (x1 > 0 && x1 < W) { // Optimization
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.stroke();
-            }
-        }
-
-        // Ambient Glow in center
-        var grd = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, H * 0.6);
-        grd.addColorStop(0, 'rgba(139, 92, 246, 0.1)');
-        grd.addColorStop(1, 'transparent');
+        // Vignette / Center Glow
+        var grd = ctx.createRadialGradient(W / 2, H / 2 + 50, 0, W / 2, H / 2 + 50, H);
+        grd.addColorStop(0, 'rgba(60, 20, 120, 0.1)'); // Subtle purple center
+        grd.addColorStop(1, 'rgba(0,0,0,0.8)'); // Dark corners
         ctx.fillStyle = grd;
         ctx.fillRect(0, 0, W, H);
 

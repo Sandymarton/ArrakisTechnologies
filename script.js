@@ -614,3 +614,33 @@ function playIntroAtStart() {
 
 // Start Intro immediately
 playIntroAtStart();
+
+/* Revenue Loss Calculator */
+function updateCalc() {
+    const missedCalls = document.getElementById('missedCalls').value;
+    const customerValue = document.getElementById('customerValue').value;
+    
+    document.getElementById('missedCallsVal').innerText = missedCalls;
+    
+    const weeklyLoss = missedCalls * customerValue;
+    const annualLoss = weeklyLoss * 52;
+    
+    // Format currency
+    const formatter = new Intl.NumberFormat('en-GB', {
+        style: 'currency',
+        currency: 'GBP',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    });
+    
+    // Animate the number change (simple version)
+    const lossElement = document.getElementById('annualLoss');
+    lossElement.innerText = formatter.format(annualLoss);
+    
+    // Optional: Add red glow intensity based on loss amount
+    const intensity = Math.min(annualLoss / 1000000, 1);
+    lossElement.style.textShadow = `0 0 ${20 + (intensity * 30)}px rgba(255, 77, 77, ${0.3 + (intensity * 0.4)})`;
+}
+
+// Initialize Calculator on Load
+document.addEventListener('DOMContentLoaded', updateCalc);

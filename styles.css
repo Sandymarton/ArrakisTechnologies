@@ -1350,3 +1350,99 @@ section {
     transform: scaleX(0);
     transform-origin: center;
 }
+/* Revenue Calculator Styles */
+.calculator-section {
+    padding: 80px 0;
+    background: linear-gradient(to bottom, #000000, #0a0a0a);
+    text-align: center;
+}
+
+.calculator-card {
+    max-width: 800px;
+    margin: 40px auto 0;
+    padding: 40px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.1);
+}
+
+.calc-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 40px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 15px;
+    color: var(--muted);
+    font-size: 1.1rem;
+}
+
+.input-val {
+    color: var(--primary);
+    font-weight: 700;
+    float: right;
+}
+
+input[type="range"] {
+    width: 100%;
+    height: 6px;
+    background: #333;
+    border-radius: 5px;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--primary);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px var(--primary);
+}
+
+input[type="number"] {
+    width: 100%;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 1.1rem;
+}
+
+.calc-result h3 {
+    color: var(--muted);
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.loss-amount {
+    font-size: 4rem;
+    font-weight: 800;
+    color: #ff4d4d;
+    text-shadow: 0 0 20px rgba(255, 77, 77, 0.3);
+    margin: 10px 0;
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.per-year {
+    color: var(--muted);
+    margin-bottom: 30px;
+}
+
+@media (max-width: 768px) {
+    .calc-inputs {
+        grid-template-columns: 1fr;
+    }
+    
+    .loss-amount {
+        font-size: 3rem;
+    }
+}

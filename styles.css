@@ -1,12 +1,12 @@
 :root {
-    --bg: #0d1117;
-    --bg-2: #161b22;
-    --text: #e6edf3;
-    --muted: #8b949e;
+    --bg: #080808;
+    --bg-2: #121212;
+    --text: #EAEAEA;
+    --muted: #A0A0A0;
     --muted-2: #6e7681;
-    --brand: #8b5cf6;
-    --accent: #FF6B35;
-    --shadow: 0 25px 50px rgba(139, 92, 246, .2);
+    --brand: #D4AF37;
+    --accent: #E5E7EB;
+    --shadow: 0 25px 50px rgba(212, 175, 55, 0.15);
     --radius: 15px;
     --header-h: 80px;
 }
@@ -23,7 +23,7 @@ html {
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Rounded Elegance', sans-serif;
     background: var(--bg);
     color: var(--text);
     line-height: 1.6;
@@ -55,7 +55,7 @@ body {
 
 .header.scrolled {
     background: rgba(13, 17, 23, .95);
-    border-bottom: 1px solid rgba(139, 92, 246, .2);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
     box-shadow: 0 6px 20px rgba(0, 0, 0, .25);
 }
 
@@ -121,8 +121,8 @@ body {
     content: "";
     position: absolute;
     inset: 0;
-    background: radial-gradient(1200px 600px at 100% -10%, rgba(139, 92, 246, .15), transparent 60%),
-        radial-gradient(900px 500px at -10% 110%, rgba(255, 107, 53, .12), transparent 60%);
+    background: radial-gradient(1200px 600px at 100% -10%, rgba(212, 175, 55, .15), transparent 60%),
+        radial-gradient(900px 500px at -10% 110%, rgba(229, 231, 235, .12), transparent 60%);
     pointer-events: none;
 }
 
@@ -145,7 +145,7 @@ body {
     height: 500px;
     right: -150px;
     top: -150px;
-    background: radial-gradient(circle, rgba(139, 92, 246, .3), transparent 60%);
+    background: radial-gradient(circle at center, rgba(229, 231, 235, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
 }
 
 .hero-bg-circle2 {
@@ -153,7 +153,7 @@ body {
     height: 400px;
     left: -150px;
     bottom: -100px;
-    background: radial-gradient(circle, rgba(255, 107, 53, .2), transparent 60%);
+    background: radial-gradient(circle, rgba(229, 231, 235, .2), transparent 60%);
     animation-duration: 6s;
 }
 
@@ -183,7 +183,8 @@ body {
     margin-bottom: 25px;
     line-height: 1.1;
     letter-spacing: -2px;
-    background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #FF6B35 100%);
+    background: linear-gradient(135deg, #D4AF37 0%, #F4C430 100%);
+    color: #D4AF37;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -218,14 +219,14 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--brand), #ec4899);
-    color: #fff;
-    box-shadow: 0 10px 30px rgba(139, 92, 246, .3);
+    background: linear-gradient(135deg, #D4AF37 0%, #F4C430 100%);
+    color: #000;
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
 }
 
 .btn-primary:hover {
     transform: translateY(-3px);
-    box-shadow: 0 15px 40px rgba(139, 92, 246, .5);
+    box-shadow: 0 15px 40px rgba(212, 175, 55, 0.5);
 }
 
 .btn-secondary {
@@ -235,7 +236,7 @@ body {
 }
 
 .btn-secondary:hover {
-    background: rgba(139, 92, 246, .1);
+    background: rgba(212, 175, 55, .1);
     transform: translateY(-3px);
 }
 
@@ -315,8 +316,9 @@ section {
 }
 
 .industry-tag {
-    background: rgba(139, 92, 246, .1);
-    border: 1px solid rgba(139, 92, 246, .3);
+    background: rgba(212, 175, 55, 0.1);
+    color: var(--brand);
+    border: 1px solid rgba(212, 175, 55, 0.2);
     padding: 12px 25px;
     border-radius: 25px;
     color: var(--brand);
@@ -326,7 +328,7 @@ section {
 }
 
 .industry-tag:hover {
-    background: rgba(139, 92, 246, .2);
+    background: rgba(212, 175, 55, .2);
     border-color: var(--brand);
     transform: translateY(-3px);
 }
@@ -343,8 +345,8 @@ section {
 }
 
 .problem-card {
-    background: linear-gradient(135deg, rgba(139, 92, 246, .05), rgba(255, 107, 53, .05));
-    border: 1px solid rgba(139, 92, 246, .2);
+    background: linear-gradient(135deg, rgba(212, 175, 55, .05), rgba(229, 231, 235, .05));
+    border: 1px solid rgba(212, 175, 55, .2);
     border-radius: var(--radius);
     padding: 40px;
     transition: transform .4s cubic-bezier(.34, 1.56, .64, 1), box-shadow .4s, border-color .4s;
@@ -392,7 +394,7 @@ section {
 }
 
 .problem-highlight {
-    background: linear-gradient(135deg, rgba(139, 92, 246, .15), rgba(255, 107, 53, .15));
+    background: linear-gradient(135deg, rgba(212, 175, 55, .15), rgba(229, 231, 235, .15));
     border: 2px solid var(--brand);
     padding: 50px;
     border-radius: var(--radius);
@@ -429,8 +431,8 @@ section {
 }
 
 .feature-card {
-    background: linear-gradient(135deg, rgba(139, 92, 246, .05), rgba(255, 107, 53, .05));
-    border: 1px solid rgba(139, 92, 246, .2);
+    background: linear-gradient(135deg, rgba(212, 175, 55, .05), rgba(229, 231, 235, .05));
+    border: 1px solid rgba(212, 175, 55, .2);
     border-radius: var(--radius);
     padding: 45px;
     transition: transform .4s, border-color .4s, box-shadow .4s;
@@ -479,7 +481,7 @@ section {
     color: var(--muted);
     padding: 10px 0 10px 30px;
     position: relative;
-    border-bottom: 1px solid rgba(139, 92, 246, .1);
+    border-bottom: 1px solid rgba(212, 175, 55, .1);
 }
 
 .feature-list li::before {
@@ -492,7 +494,7 @@ section {
 }
 
 .demo-button {
-    background: rgba(139, 92, 246, .1);
+    background: rgba(212, 175, 55, .1);
     border: 2px solid var(--brand);
     padding: 12px 25px;
     border-radius: 8px;
@@ -505,7 +507,7 @@ section {
 }
 
 .demo-button:hover {
-    background: rgba(139, 92, 246, .2);
+    background: rgba(212, 175, 55, .2);
     transform: translateX(5px);
 }
 
@@ -521,8 +523,8 @@ section {
 }
 
 .integration-category {
-    background: rgba(139, 92, 246, .05);
-    border: 1px solid rgba(139, 92, 246, .2);
+    background: rgba(212, 175, 55, .05);
+    border: 1px solid rgba(212, 175, 55, .2);
     border-radius: 12px;
     padding: 30px;
     text-align: center;
@@ -552,7 +554,7 @@ section {
 }
 
 .roi-card {
-    background: linear-gradient(135deg, rgba(139, 92, 246, .1), rgba(255, 107, 53, .1));
+    background: linear-gradient(135deg, rgba(212, 175, 55, .1), rgba(229, 231, 235, .1));
     border: 2px solid var(--brand);
     border-radius: var(--radius);
     padding: 40px;
@@ -571,7 +573,7 @@ section {
 }
 
 .roi-result {
-    background: rgba(139, 92, 246, .2);
+    background: rgba(212, 175, 55, .2);
     padding: 20px;
     border-radius: 10px;
     margin-top: 25px;
@@ -582,8 +584,8 @@ section {
 }
 
 .roi-example {
-    background: linear-gradient(135deg, rgba(139, 92, 246, .08), rgba(255, 107, 53, .08));
-    border: 1px solid rgba(139, 92, 246, .3);
+    background: linear-gradient(135deg, rgba(212, 175, 55, .08), rgba(229, 231, 235, .08));
+    border: 1px solid rgba(212, 175, 55, .3);
     padding: 50px;
     border-radius: var(--radius);
     margin-top: 60px;
@@ -632,8 +634,8 @@ section {
 }
 
 .case-card {
-    background: linear-gradient(135deg, rgba(139, 92, 246, .05), rgba(255, 107, 53, .05));
-    border: 1px solid rgba(139, 92, 246, .2);
+    background: linear-gradient(135deg, rgba(212, 175, 55, .05), rgba(229, 231, 235, .05));
+    border: 1px solid rgba(212, 175, 55, .2);
     border-radius: var(--radius);
     padding: 45px;
     transition: transform .4s, border-color .4s, box-shadow .4s;
@@ -642,7 +644,7 @@ section {
 .case-card:hover {
     transform: translateY(-8px);
     border-color: var(--brand);
-    box-shadow: 0 25px 50px rgba(139, 92, 246, .15);
+    box-shadow: 0 25px 50px rgba(212, 175, 55, .15);
 }
 
 .case-client {
@@ -677,7 +679,7 @@ section {
 }
 
 .case-results {
-    background: rgba(139, 92, 246, .1);
+    background: rgba(212, 175, 55, .1);
     padding: 30px;
     border-radius: 12px;
     margin-top: 25px;
@@ -738,8 +740,8 @@ section {
 }
 
 .price-card {
-    background: linear-gradient(135deg, rgba(139, 92, 246, .05), rgba(255, 107, 53, .05));
-    border: 2px solid rgba(139, 92, 246, .2);
+    background: linear-gradient(135deg, rgba(212, 175, 55, .05), rgba(229, 231, 235, .05));
+    border: 2px solid rgba(212, 175, 55, .2);
     border-radius: var(--radius);
     padding: 50px;
     display: flex;
@@ -754,10 +756,10 @@ section {
 }
 
 .price-card.featured {
-    background: linear-gradient(135deg, rgba(139, 92, 246, .12), rgba(255, 107, 53, .12));
+    background: linear-gradient(135deg, rgba(212, 175, 55, .12), rgba(229, 231, 235, .12));
     border: 2px solid var(--brand);
     transform: scale(1.03);
-    box-shadow: 0 0 60px rgba(139, 92, 246, .3);
+    box-shadow: 0 0 60px rgba(212, 175, 55, .3);
 }
 
 .price-badge {
@@ -824,7 +826,7 @@ section {
     padding: 12px 0 12px 30px;
     color: var(--muted);
     position: relative;
-    border-bottom: 1px solid rgba(139, 92, 246, .1);
+    border-bottom: 1px solid rgba(212, 175, 55, .1);
 }
 
 .price-features li::before {
@@ -837,7 +839,7 @@ section {
 }
 
 .roi-box {
-    background: rgba(139, 92, 246, .1);
+    background: rgba(212, 175, 55, .1);
     padding: 20px;
     border-radius: 10px;
     margin-bottom: 25px;
@@ -871,8 +873,8 @@ section {
 
 .currency-btn {
     padding: 14px 35px;
-    background: rgba(139, 92, 246, .1);
-    border: 2px solid rgba(139, 92, 246, .3);
+    background: rgba(212, 175, 55, .1);
+    border: 2px solid rgba(212, 175, 55, .3);
     border-radius: 8px;
     color: var(--brand);
     font-weight: 600;
@@ -881,7 +883,7 @@ section {
 }
 
 .currency-btn:hover {
-    background: rgba(139, 92, 246, .2);
+    background: rgba(212, 175, 55, .2);
     border-color: var(--brand);
 }
 
@@ -901,7 +903,7 @@ section {
 }
 
 .faq-item {
-    border-bottom: 1px solid rgba(139, 92, 246, .2);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
     padding: 30px 0;
     cursor: pointer;
     transition: border-color .3s;
@@ -1013,7 +1015,7 @@ section {
     text-align: center;
     color: var(--muted-2);
     font-size: .95rem;
-    border-top: 1px solid rgba(139, 92, 246, .1);
+    border-top: 1px solid rgba(212, 175, 55, .1);
 }
 
 .copyright a {
@@ -1090,7 +1092,7 @@ section {
 
 .audio-card {
     background: linear-gradient(145deg, rgba(22, 27, 34, 0.8), rgba(13, 17, 23, 0.9));
-    border: 1px solid rgba(139, 92, 246, 0.2);
+    border: 1px solid rgba(212, 175, 55, 0.2);
     border-radius: var(--radius);
     padding: 30px;
     transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s;
@@ -1101,7 +1103,7 @@ section {
 .audio-card:hover {
     transform: translateY(-5px);
     border-color: var(--brand);
-    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.15);
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.15);
 }
 
 /* Audio Card Header */
@@ -1115,7 +1117,7 @@ section {
 .audio-icon-bg {
     width: 50px;
     height: 50px;
-    background: rgba(139, 92, 246, 0.1);
+    background: rgba(212, 175, 55, 0.1);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -1344,12 +1346,13 @@ section {
     top: 50%;
     width: 100%;
     height: 2px;
-    background: rgba(139, 92, 246, 0.8);
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.6), 0 0 60px rgba(139, 92, 246, 0.3);
+    background: rgba(212, 175, 55, 0.8);
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.4), 0 0 60px rgba(212, 175, 55, 0.3);
     z-index: 10002;
     transform: scaleX(0);
     transform-origin: center;
 }
+
 /* Revenue Calculator Styles */
 .calculator-section {
     padding: 80px 0;
@@ -1364,7 +1367,7 @@ section {
     border-radius: 20px;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 0 30px rgba(139, 92, 246, 0.1);
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.1);
 }
 
 .calc-inputs {
@@ -1441,7 +1444,7 @@ input[type="number"] {
     .calc-inputs {
         grid-template-columns: 1fr;
     }
-    
+
     .loss-amount {
         font-size: 3rem;
     }

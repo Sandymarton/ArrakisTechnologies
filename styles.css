@@ -949,10 +949,27 @@ section {
 }
 
 .final-cta {
-    background: linear-gradient(135deg, var(--brand) 0%, var(--accent) 100%);
+    background: radial-gradient(circle at center, var(--bg-2) 0%, var(--bg) 100%);
+    border: 1px solid var(--brand);
+    box-shadow: 0 0 50px rgba(212, 175, 55, 0.1);
     color: #fff;
     text-align: center;
     padding: 100px 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Scroll Animation Classes */
+.reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s ease-out;
+    will-change: opacity, transform;
+}
+
+.reveal-on-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .final-cta h2 {

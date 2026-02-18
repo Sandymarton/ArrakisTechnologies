@@ -619,12 +619,12 @@ playIntroAtStart();
 function updateCalc() {
     const missedCalls = document.getElementById('missedCalls').value;
     const customerValue = document.getElementById('customerValue').value;
-    
+
     document.getElementById('missedCallsVal').innerText = missedCalls;
-    
+
     const weeklyLoss = missedCalls * customerValue;
     const annualLoss = weeklyLoss * 52;
-    
+
     // Format currency
     const formatter = new Intl.NumberFormat('en-GB', {
         style: 'currency',
@@ -632,11 +632,11 @@ function updateCalc() {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
     });
-    
+
     // Animate the number change (simple version)
     const lossElement = document.getElementById('annualLoss');
     lossElement.innerText = formatter.format(annualLoss);
-    
+
     // Optional: Add red glow intensity based on loss amount
     const intensity = Math.min(annualLoss / 1000000, 1);
     lossElement.style.textShadow = `0 0 ${20 + (intensity * 30)}px rgba(255, 77, 77, ${0.3 + (intensity * 0.4)})`;
@@ -644,3 +644,26 @@ function updateCalc() {
 
 // Initialize Calculator on Load
 document.addEventListener('DOMContentLoaded', updateCalc);
+
+// ==========================================
+// SCROLL REVEAL ANIMATION
+// ==========================================
+document.addEventListener('DOMContentLoaded', function () {
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.15
+    };
+
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target); // Only animate once
+            }
+        });
+    }, observerOptions);
+
+    const elementsToReveal = document.querySelectorAll('.reveal-on-scroll');
+    elementsToReveal.forEach(el => observer.observe(el));
+});

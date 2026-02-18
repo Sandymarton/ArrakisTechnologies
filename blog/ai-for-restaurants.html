@@ -68,7 +68,8 @@
             font-size: 3rem;
             margin-bottom: 20px;
             background: linear-gradient(135deg, #fff 0%, #a8b8d8 100%);
-            -webkit-background-clip: text; background-clip: text;
+            -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -130,6 +131,12 @@
 </head>
 
 <body>
+    <!-- Page Transition Overlay -->
+    <div class="page-transition-overlay">
+        <div class="transition-logo">
+            <img src="../assets/logo.svg" alt="Arrakis">
+        </div>
+    </div>
 
     <header class="header">
         <div class="nav-container">
@@ -168,7 +175,8 @@
             <h2>The Real Cost of a Missed Call</h2>
             <p>In the hospitality industry, a missed call isn't just a nuisance; it's lost revenue. The average table of
                 four brings in <strong>£150-£300</strong>. Miss just two of those calls a night, and you’re losing over
-                <strong>£10,000 a month</strong>.</p>
+                <strong>£10,000 a month</strong>.
+            </p>
 
             <h2>Enter the AI Voice Receptionist</h2>
             <p>This isn't the old-school "Press 1 for hours" robot. Modern AI Voice Agents are conversational
@@ -206,6 +214,11 @@
         <p>&copy; 2025 Arrakis Technologies.</p>
     </div>
 
+    <!-- GSAP & Main Logic -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+    <script src="../script.js"></script>
 </body>
 
 </html>

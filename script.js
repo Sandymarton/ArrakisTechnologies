@@ -667,3 +667,68 @@ document.addEventListener('DOMContentLoaded', function () {
     const elementsToReveal = document.querySelectorAll('.reveal-on-scroll');
     elementsToReveal.forEach(el => observer.observe(el));
 });
+
+// ==========================================
+// CINEMATIC PAGE TRANSITIONS (Jesko Jets Style)
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const overlay = document.querySelector('.page-transition-overlay');
+    const logo = document.querySelector('.transition-logo');
+
+    // 1. ENTER ANIMATION (Reveal Page)
+    // The overlay is initially covering the screen (CSS). We slide it UP.
+    if (overlay && logo) {
+        const tl = gsap.timeline();
+
+        // Logo fades in slightly then out
+        tl.to(logo, { opacity: 1, scale: 1, duration: 0.5, ease: "power2.out" })
+            .to(logo, { opacity: 0, scale: 0.8, duration: 0.3, ease: "power2.in" }, "+=0.2") // Hold for 0.2s
+            // Slide Overlay UP
+            .to(overlay, {
+                yPercent: -100,
+                duration: 0.8,
+                ease: "power3.inOut",
+                onComplete: () => {
+                    overlay.style.pointerEvents = "none"; // Ensure clicks pass through
+                }
+            });
+    }
+
+    // 2. EXIT ANIMATION (Navigate Away)
+    // Intercept all internal links
+    const links = document.querySelectorAll('a');
+
+    links.forEach(link => {
+        link.addEventListener('click', (e) => {
+            const href = link.getAttribute('href');
+
+            // Ignore hash links (anchors on same page) and external links
+            if (href.startsWith('#') || href.startsWith('mailto:') || link.target === '_blank') return;
+
+            e.preventDefault(); // Stop immediate navigation
+
+            // Reset Overlay Position (It was moved up -100%)
+            // We want it to slide IN from BOTTOM (100% -> 0%) OR simply Fade In
+            // Let's do Slide UP from opacity? No, let's slide DOWN or UP again?
+            // "Jesko Jets" often does a curtain wipe.
+            // Let's try: Slide IN from BOTTOM (covering screen)
+
+            if (overlay && logo) {
+                // Prepare overlay at bottom
+                gsap.set(overlay, { yPercent: 100, opacity: 1 });
+                overlay.style.pointerEvents = "all"; // Block clicks
+
+                const tl = gsap.timeline({
+                    onComplete: () => {
+                        window.location.href = href; // Navigate
+                    }
+                });
+
+                tl.to(overlay, { yPercent: 0, duration: 0.6, ease: "power3.inOut" })
+                    .to(logo, { opacity: 1, scale: 1, duration: 0.3 }, "-=0.2");
+            } else {
+                window.location.href = href; // Fallback
+            }
+        });
+    });
+});

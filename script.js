@@ -41,38 +41,93 @@ function startHeroAnimations() {
         }, "-=0.8");
 }
 
-// Function to apply scroll animations
-function applyScrollAnimations(selector, config = {}) {
-    gsap.utils.toArray(selector).forEach((element, index) => {
-        gsap.from(element, {
+// function applyScrollAnimations(selector, config = {}) {
+//     gsap.utils.toArray(selector).forEach((element, index) => {
+//         gsap.from(element, {
+//             scrollTrigger: {
+//                 trigger: element,
+//                 start: 'top 85%',
+//                 toggleActions: 'play reverse play reverse'
+//             },
+//             duration: config.duration || 0.8,
+//             opacity: 0,
+//             y: config.y || 40,
+//             scale: config.scale || 1,
+//             rotation: config.rotation || 0,
+//             delay: index * (config.stagger || 0.1),
+//             ease: config.ease || 'power3.out'
+//         });
+//     });
+// }
+
+// ==========================================
+// LENIS SMOOTH SCROLL & PARALLAX
+// ==========================================
+let lenis;
+
+function initSmoothScroll() {
+    // 1. Initialize Lenis
+    lenis = new Lenis({
+        duration: 2.2,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Exponential easing
+        direction: 'vertical',
+        gestureDirection: 'vertical',
+        smooth: true,
+        mouseMultiplier: 1,
+        smoothTouch: false,
+        touchMultiplier: 2,
+    });
+
+    // 2. Connect Lenis to ScrollTrigger
+    lenis.on('scroll', ScrollTrigger.update);
+
+    gsap.ticker.add((time) => {
+        lenis.raf(time * 1000);
+    });
+
+    gsap.ticker.lagSmoothing(0);
+
+    // 3. Parallax Animations (The "Jesko Jets" Feel)
+    // Instead of just appearing, elements move at different speeds (Scrubbing)
+
+    // Fade Up + Parallax Lift
+    gsap.utils.toArray('.reveal-on-scroll, .section-title, .section-subtitle, .integration-categories div, .roi-example').forEach((el) => {
+        // Initial state
+        gsap.set(el, { y: 100, opacity: 0 });
+
+        gsap.to(el, {
+            y: 0,
+            opacity: 1,
+            duration: 1.5,
+            ease: "power3.out",
             scrollTrigger: {
-                trigger: element,
-                start: 'top 85%',
-                toggleActions: 'play reverse play reverse'
-            },
-            duration: config.duration || 0.8,
-            opacity: 0,
-            y: config.y || 40,
-            scale: config.scale || 1,
-            rotation: config.rotation || 0,
-            delay: index * (config.stagger || 0.1),
-            ease: config.ease || 'power3.out'
+                trigger: el,
+                start: "top 90%", // Start when top of element hits 90% of viewport
+                end: "bottom 60%",
+                toggleActions: "play none none reverse",
+                // scrub: 1 // True parallax scrubbing (optional, remove for just smooth reveal)
+            }
+        });
+    });
+
+    // Specific Parallax for Images/Cards (Move slower)
+    gsap.utils.toArray('.feature-card, .problem-card, .roi-card').forEach((el, i) => {
+        gsap.to(el, {
+            y: -50, // Move UP slightly while scrolling down
+            ease: "none",
+            scrollTrigger: {
+                trigger: el,
+                start: "top bottom",
+                end: "bottom top",
+                scrub: true
+            }
         });
     });
 }
 
-applyScrollAnimations('.section-title');
-applyScrollAnimations('.section-subtitle');
-applyScrollAnimations('.problem-card', { y: 60, rotation: -3, stagger: 0.1, ease: 'back.out' });
-applyScrollAnimations('.problem-highlight', { y: 40, ease: 'power2.out' });
-applyScrollAnimations('.feature-card', { y: 60, stagger: 0.1, ease: 'back.out' });
-applyScrollAnimations('.integration-categories div', { y: 40, stagger: 0.1, ease: 'power2.out' });
-applyScrollAnimations('.roi-card', { y: 60, stagger: 0.1, ease: 'power3.out' });
-applyScrollAnimations('.roi-example', { y: 40, ease: 'power2.out' });
-applyScrollAnimations('.case-card', { y: 60, stagger: 0.1, ease: 'power3.out' });
-applyScrollAnimations('.price-card', { y: 60, stagger: 0.1, ease: 'power3.out' });
+// Initialize on Load
+document.addEventListener('DOMContentLoaded', initSmoothScroll);
 
-// Smooth Scrolling for Navigation
 document.querySelectorAll('.nav-links a').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         const targetId = this.getAttribute('href');
@@ -648,24 +703,58 @@ document.addEventListener('DOMContentLoaded', updateCalc);
 // ==========================================
 // SCROLL REVEAL ANIMATION
 // ==========================================
-document.addEventListener('DOMContentLoaded', function () {
-    const observerOptions = {
-        root: null,
-        rootMargin: '0px',
-        threshold: 0.15
-    };
+// --------------------------------------------------------
+// RYAN RINGER-DUFFY STYLE REVEALS (Masked Scale + Stagger)
+// --------------------------------------------------------
 
-    const observer = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('is-visible');
-                observer.unobserve(entry.target); // Only animate once
-            }
-        });
-    }, observerOptions);
+// Register ScrollTrigger if not already done (it is likely done in inline script, but safe to do again)
+gsap.registerPlugin(ScrollTrigger);
 
-    const elementsToReveal = document.querySelectorAll('.reveal-on-scroll');
-    elementsToReveal.forEach(el => observer.observe(el));
+const revealElements = document.querySelectorAll('.reveal-on-scroll');
+
+revealElements.forEach((el) => {
+    // Create a timeline for each element
+    const tl = gsap.timeline({
+        scrollTrigger: {
+            trigger: el,
+            start: "top 85%", // Start animation when top of element hits 85% of viewport
+            end: "bottom 20%",
+            toggleActions: "play none none reverse"
+        }
+    });
+
+    tl.fromTo(el,
+        {
+            y: 50,
+            opacity: 0,
+            scale: 0.95 // Scale up effect
+        },
+        {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 0.8,
+            ease: "power3.out"
+        }
+    );
+});
+
+// --------------------------------------------------------
+// INTERNAL IMAGE PARALLAX (Window Effect)
+// --------------------------------------------------------
+const parallaxImages = document.querySelectorAll('.solution-card-image img'); // Or any other target images
+
+parallaxImages.forEach(img => {
+    gsap.to(img, {
+        yPercent: 15, // Move image 15% down relative to container
+        ease: "none",
+        scrollTrigger: {
+            trigger: img.parentElement,
+            start: "top bottom", // Start when container enters viewport
+            end: "bottom top",   // End when container leaves
+            scrub: true
+        }
+    });
 });
 
 // ==========================================
@@ -732,3 +821,48 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+// ==========================================
+// DYNAMIC APPEARANCE (Background Transitions)
+// ==========================================
+function initDynamicBackgrounds() {
+    console.log("Initializing Dynamic Backgrounds");
+    const bg = document.getElementById('dynamic-bg');
+    if (!bg) return;
+
+    // Safety check for GSAP
+    if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
+        console.warn("GSAP or ScrollTrigger not loaded for dynamic backgrounds.");
+        return;
+    }
+
+    // Define section colors (Dark Luxury Palette)
+    // Using subtle variations of black/navy/charcoal
+    const transitions = [
+        { selector: '.hero', color: '#080808' },          // Base Black
+        { selector: '.social-proof', color: '#0d1117' },  // Deep Navy (Subtle)
+        { selector: '.problem', color: '#000000' },       // Pitch Black (Contrast)
+        { selector: '.solution', color: '#0a0a0a' },      // Soft Charcoal
+        { selector: '.integrations', color: '#080808' },  // Base Black
+        { selector: '.roi', color: '#0d1117' },           // Deep Navy
+        { selector: '.pricing', color: '#050505' },       // Very Dark Grey
+        { selector: '.cta-section', color: '#120f05' }    // Warm Black (Gold Tint)
+    ];
+
+    transitions.forEach(({ selector, color }) => {
+        const section = document.querySelector(selector);
+        if (section) {
+            ScrollTrigger.create({
+                trigger: section,
+                start: "top center", // Trigger when top of section hits center of viewport
+                end: "bottom center",
+                onEnter: () => gsap.to(bg, { backgroundColor: color, duration: 1.2, ease: "power2.out" }),
+                onEnterBack: () => gsap.to(bg, { backgroundColor: color, duration: 1.2, ease: "power2.out" }),
+                // Ensure scrub is smooth if user scrolls back and forth rapidly
+                toggleActions: "play none none reverse"
+            });
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initDynamicBackgrounds);

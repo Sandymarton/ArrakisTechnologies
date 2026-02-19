@@ -30,6 +30,15 @@ body {
     overflow-x: hidden;
 }
 
+#dynamic-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background-color: var(--bg);
+    transition: background-color 0.5s ease;
+    will-change: background-color;
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -303,7 +312,6 @@ section {
 }
 
 .social-proof {
-    background: linear-gradient(135deg, #0d1117 0%, #1a1f4d 100%);
     text-align: center;
 }
 
@@ -334,7 +342,7 @@ section {
 }
 
 .problem {
-    background: var(--bg)
+    /* Transparent for dynamic bg */
 }
 
 .problem-grid {
@@ -351,7 +359,9 @@ section {
     padding: 40px;
     transition: transform .4s cubic-bezier(.34, 1.56, .64, 1), box-shadow .4s, border-color .4s;
     position: relative;
+    /* Animation Support */
     overflow: hidden;
+    will-change: transform, opacity;
 }
 
 .problem-card::before {
@@ -420,7 +430,7 @@ section {
 }
 
 .solution {
-    background: linear-gradient(135deg, var(--bg) 0%, var(--bg-2) 100%);
+    /* Transparent for dynamic bg */
 }
 
 .features-grid {
@@ -436,6 +446,9 @@ section {
     border-radius: var(--radius);
     padding: 45px;
     transition: transform .4s, border-color .4s, box-shadow .4s;
+    /* Animation Support */
+    overflow: hidden;
+    will-change: transform, opacity;
 }
 
 .feature-card:hover {
@@ -512,7 +525,7 @@ section {
 }
 
 .integrations {
-    background: var(--bg)
+    /* Transparent for dynamic bg */
 }
 
 .integration-categories {
@@ -543,7 +556,7 @@ section {
 }
 
 .roi {
-    background: linear-gradient(135deg, #0d1117 0%, #1a1f4d 100%);
+    /* Transparent for dynamic bg */
 }
 
 .roi-grid {
@@ -623,7 +636,7 @@ section {
 }
 
 .case-studies {
-    background: var(--bg)
+    /* Transparent for dynamic bg */
 }
 
 .case-grid {
@@ -728,7 +741,7 @@ section {
 }
 
 .pricing {
-    background: linear-gradient(135deg, var(--bg) 0%, var(--bg-2) 100%);
+    /* Transparent for dynamic bg */
 }
 
 .pricing-grid {
@@ -1500,3 +1513,31 @@ input[type="number"] {
         font-size: 3rem;
     }
 }
+/* =========================================
+   STACKING CARDS (Solution Section) 
+   ========================================= */
+.solution .features-grid {
+    display: block; /* Disable grid to allow sticky flow */
+    position: relative;
+    max-width: 800px; /* Limit width for centered stack */
+    margin: 0 auto;
+}
+
+.solution .feature-card {
+    position: sticky;
+    top: 120px; /* Stick 120px from top */
+    margin-bottom: 300px; /* Space to scroll before next card */
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.5); /* Shadow on top to separate from card behind */
+    background: #080808; /* Ensure solid background to cover card behind */
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    z-index: 1;
+}
+
+/* Specific z-indices to ensure correct stacking order if needed, 
+   though HTML order usually handles this for sticky. 
+   We adding a slight scale effect for better visual separation. */
+.solution .feature-card:nth-child(1) { top: 120px; }
+.solution .feature-card:nth-child(2) { top: 140px; }
+.solution .feature-card:nth-child(3) { top: 160px; }
+.solution .feature-card:nth-child(4) { top: 180px; }
+.solution .feature-card:nth-child(5) { top: 200px; margin-bottom: 100px; }

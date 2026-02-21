@@ -41,24 +41,6 @@ function startHeroAnimations() {
         }, "-=0.8");
 }
 
-// function applyScrollAnimations(selector, config = {}) {
-//     gsap.utils.toArray(selector).forEach((element, index) => {
-//         gsap.from(element, {
-//             scrollTrigger: {
-//                 trigger: element,
-//                 start: 'top 85%',
-//                 toggleActions: 'play reverse play reverse'
-//             },
-//             duration: config.duration || 0.8,
-//             opacity: 0,
-//             y: config.y || 40,
-//             scale: config.scale || 1,
-//             rotation: config.rotation || 0,
-//             delay: index * (config.stagger || 0.1),
-//             ease: config.ease || 'power3.out'
-//         });
-//     });
-// }
 
 // ==========================================
 // LENIS SMOOTH SCROLL & PARALLAX
@@ -177,33 +159,28 @@ document.querySelectorAll('.faq-question').forEach(item => {
 });
 
 // Currency Converter Logic
+let cachedCurrencyElements = null;
+
 function switchCurrency(currency) {
-    const priceElements = document.querySelectorAll('.price-value');
-    const setupElements = document.querySelectorAll('.setup-value');
-    const symbolElements = document.querySelectorAll('.currency-symbol');
-    const roiElements = document.querySelectorAll('.roi-currency-value');
-    const currencyButtons = document.querySelectorAll('.currency-btn');
-
-    let symbol;
-
-    if (currency === 'usd') {
-        symbol = '$';
-    } else if (currency === 'eur') {
-        symbol = '€';
-    } else {
-        symbol = '£';
+    if (!cachedCurrencyElements) {
+        cachedCurrencyElements = {
+            prices: document.querySelectorAll('.price-value'),
+            setups: document.querySelectorAll('.setup-value'),
+            symbols: document.querySelectorAll('.currency-symbol'),
+            rois: document.querySelectorAll('.roi-currency-value'),
+            buttons: document.querySelectorAll('.currency-btn')
+        };
     }
 
-    priceElements.forEach(el => el.textContent = el.getAttribute(`data-${currency}`));
-    setupElements.forEach(el => el.textContent = el.getAttribute(`data-${currency}`));
-    symbolElements.forEach(el => el.textContent = symbol);
-    roiElements.forEach(el => el.textContent = el.getAttribute(`data-${currency}`));
+    const symbol = currency === 'usd' ? '$' : (currency === 'eur' ? '€' : '£');
 
-    currencyButtons.forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.getAttribute('data-currency') === currency) {
-            btn.classList.add('active');
-        }
+    cachedCurrencyElements.prices.forEach(el => el.textContent = el.getAttribute(`data-${currency}`));
+    cachedCurrencyElements.setups.forEach(el => el.textContent = el.getAttribute(`data-${currency}`));
+    cachedCurrencyElements.symbols.forEach(el => el.textContent = symbol);
+    cachedCurrencyElements.rois.forEach(el => el.textContent = el.getAttribute(`data-${currency}`));
+
+    cachedCurrencyElements.buttons.forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-currency') === currency);
     });
 }
 
@@ -214,88 +191,51 @@ document.querySelectorAll('.currency-btn').forEach(btn => {
     btn.addEventListener('click', () => switchCurrency(btn.getAttribute('data-currency')));
 });
 
-// Video Modal Logic
-const videoModal = document.getElementById('videoModal');
-const watchDemoBtn = document.getElementById('watchDemoBtn');
-const closeButton = document.querySelector('.close-button');
-const demoVideoPlayer = document.getElementById('demoVideoPlayer');
+// ==========================================
+// GENERIC MODAL LOGIC
+// ==========================================
+function setupModal({ modalId, triggerBtnId, closeBtnSelector, mediaId = null, isAudio = false }) {
+    const modal = document.getElementById(modalId);
+    const closeBtn = document.querySelector(closeBtnSelector) || document.getElementById(closeBtnSelector.replace('#', ''));
+    const media = mediaId ? document.getElementById(mediaId) : null;
 
-if (watchDemoBtn && videoModal && closeButton && demoVideoPlayer) {
-    // Open modal when button is clicked
-    watchDemoBtn.addEventListener('click', function (e) {
-        e.preventDefault();
-        videoModal.classList.add('show');
-        demoVideoPlayer.play();
-    });
+    if (!modal || !closeBtn) return;
 
-    // Close modal when close button is clicked
-    closeButton.addEventListener('click', function () {
-        videoModal.classList.remove('show');
-        demoVideoPlayer.pause();
-        demoVideoPlayer.currentTime = 0;
-    });
-
-    // Close modal when clicking outside of the modal content
-    window.addEventListener('click', function (e) {
-        if (e.target === videoModal) {
-            videoModal.classList.remove('show');
-            demoVideoPlayer.pause();
-            demoVideoPlayer.currentTime = 0;
+    function closeModal() {
+        modal.classList.remove('show');
+        if (media) {
+            media.pause();
+            media.currentTime = 0;
         }
-    });
+    }
 
-    // Close modal with Escape key
-    document.addEventListener('keydown', function (e) {
-        if (e.key === "Escape" && videoModal.classList.contains('show')) {
-            videoModal.classList.remove('show');
-            demoVideoPlayer.pause();
-            demoVideoPlayer.currentTime = 0;
+    closeBtn.addEventListener('click', closeModal);
+    window.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === "Escape" && modal.classList.contains('show')) closeModal(); });
+
+    if (triggerBtnId) {
+        const triggerBtn = document.getElementById(triggerBtnId);
+        if (triggerBtn) {
+            triggerBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                modal.classList.add('show');
+                if (media) {
+                    const playPromise = media.play();
+                    if (playPromise !== undefined && isAudio) {
+                        playPromise.catch(error => console.log("Media play failed: ", error));
+                    }
+                }
+            });
         }
-    });
+    }
 }
 
-// ==========================================
-// AUDIO MODAL LOGIC
-// ==========================================
-const audioModal = document.getElementById('audioModal');
-const audioDemoBtn = document.getElementById('audioDemoBtn');
-const closeAudioBtn = document.getElementById('closeAudioBtn');
-const demoAudioPlayer = document.getElementById('demoAudioPlayer');
+// Initialize Modals
+setupModal({ modalId: 'videoModal', triggerBtnId: 'watchDemoBtn', closeBtnSelector: '.close-button', mediaId: 'demoVideoPlayer' });
+setupModal({ modalId: 'audioModal', triggerBtnId: 'audioDemoBtn', closeBtnSelector: '#closeAudioBtn', mediaId: 'demoAudioPlayer', isAudio: true });
+setupModal({ modalId: 'calendarModal', closeBtnSelector: '#closeCalendarBtn' });
 
-if (audioDemoBtn && audioModal && closeAudioBtn && demoAudioPlayer) {
-    // Open audio modal
-    audioDemoBtn.addEventListener('click', function () {
-        audioModal.classList.add('show');
-        demoAudioPlayer.play().catch(function (error) {
-            console.log("Audio play failed (browser might require interaction): ", error);
-        });
-    });
-
-    // Close audio modal via X button
-    closeAudioBtn.addEventListener('click', function () {
-        audioModal.classList.remove('show');
-        demoAudioPlayer.pause();
-        demoAudioPlayer.currentTime = 0;
-    });
-
-    // Close audio modal by clicking outside
-    window.addEventListener('click', function (e) {
-        if (e.target === audioModal) {
-            audioModal.classList.remove('show');
-            demoAudioPlayer.pause();
-            demoAudioPlayer.currentTime = 0;
-        }
-    });
-
-    // Close audio modal with Escape key
-    document.addEventListener('keydown', function (e) {
-        if (e.key === "Escape" && audioModal.classList.contains('show')) {
-            audioModal.classList.remove('show');
-            demoAudioPlayer.pause();
-            demoAudioPlayer.currentTime = 0;
-        }
-    });
-}
+// Audio Modal Logic handled by setupModal above
 // ==========================================
 // AUDIO PLAYER LOGIC
 // ==========================================
@@ -369,36 +309,11 @@ function seekAudio(audioId, event, container) {
 }
 
 // Calendar Integration
-// Calendar Integration
-const calendarModal = document.getElementById('calendarModal');
-const closeCalendarBtn = document.getElementById('closeCalendarBtn');
-
+// Legacy Calendar Open via attribute
 function openCalendar() {
-    if (calendarModal) {
-        calendarModal.classList.add('show');
-    }
+    const modal = document.getElementById('calendarModal');
+    if (modal) modal.classList.add('show');
     return false;
-}
-
-if (calendarModal && closeCalendarBtn) {
-    // Close via X button
-    closeCalendarBtn.addEventListener('click', function () {
-        calendarModal.classList.remove('show');
-    });
-
-    // Close by clicking outside
-    window.addEventListener('click', function (e) {
-        if (e.target === calendarModal) {
-            calendarModal.classList.remove('show');
-        }
-    });
-
-    // Close with Escape key
-    document.addEventListener('keydown', function (e) {
-        if (e.key === "Escape" && calendarModal.classList.contains('show')) {
-            calendarModal.classList.remove('show');
-        }
-    });
 }
 
 

@@ -202,39 +202,6 @@
                     <a href="#" class="btn btn-secondary" id="watchDemoBtn">Watch Demo</a>
                 </div>
 
-                <div id="videoModal" class="modal">
-                    <div class="modal-content">
-                        <span class="close-button">&times;</span>
-                        <video id="demoVideoPlayer" src="assets/Arrakis1.mp4" controls preload="auto"></video>
-                    </div>
-                </div>
-
-                <div id="audioModal" class="modal">
-                    <div class="modal-content" style="max-width: 500px; text-align: center; padding: 40px;">
-                        <span class="close-button" id="closeAudioBtn">&times;</span>
-                        <h3 style="margin-bottom: 25px; color: var(--text);">Real AI Call Recording</h3>
-                        <p style="margin-bottom: 20px; color: var(--muted);">Listen to how natural the conversation
-                            flows.</p>
-
-                        <audio id="demoAudioPlayer" controls style="width: 100%;">
-                            <source src="assets/demo_call.mp3.wav" type="audio/mpeg">
-                            Your browser does not support the audio element.
-                        </audio>
-                    </div>
-                </div>
-
-                <!-- Calendar Modal -->
-                <div id="calendarModal" class="modal">
-                    <div class="modal-content"
-                        style="max-width: 1000px; width: 90%; height: 80vh; padding: 0; overflow: hidden; background: #fff;">
-                        <span class="close-button" id="closeCalendarBtn"
-                            style="color: #333; z-index: 10; right: 20px; top: 10px; position: absolute;">&times;</span>
-                        <div class="calendly-inline-widget"
-                            data-url="https://calendly.com/fsquaredfrancone/30min?hide_event_type_details=1&hide_gdpr_banner=1"
-                            style="min-width:320px;height:100%;"></div>
-                    </div>
-                </div>
-
                 <div class="trust-bar">
                     <div class="trust-stat">
                         <div class="trust-number">30+</div>
@@ -928,6 +895,40 @@
         <p>
             <a href="mailto:info@arrakistechnologies.com">info@arrakistechnologies.com</a>
         </p>
+    </div>
+
+    <!-- Modals (Moved to bottom to prevent CSS transform trapping) -->
+    <div id="videoModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <video id="demoVideoPlayer" src="assets/Arrakis1.mp4" controls preload="auto"></video>
+        </div>
+    </div>
+
+    <div id="audioModal" class="modal">
+        <div class="modal-content" style="max-width: 500px; text-align: center; padding: 40px;">
+            <span class="close-button" id="closeAudioBtn">&times;</span>
+            <h3 style="margin-bottom: 25px; color: var(--text);">Real AI Call Recording</h3>
+            <p style="margin-bottom: 20px; color: var(--muted);">Listen to how natural the conversation
+                flows.</p>
+
+            <audio id="demoAudioPlayer" controls style="width: 100%;">
+                <source src="assets/demo_call.mp3.wav" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+    </div>
+
+    <!-- Calendar Modal -->
+    <div id="calendarModal" class="modal">
+        <div class="modal-content"
+            style="max-width: 1000px; width: 90%; height: 80vh; padding: 0; overflow: hidden; background: #fff;">
+            <span class="close-button" id="closeCalendarBtn"
+                style="color: #333; z-index: 10; right: 20px; top: 10px; position: absolute;">&times;</span>
+            <div class="calendly-inline-widget"
+                data-url="https://calendly.com/fsquaredfrancone/30min?hide_event_type_details=1&hide_gdpr_banner=1"
+                style="min-width:320px;height:100%;"></div>
+        </div>
     </div>
 
     <!-- Main Logic -->
